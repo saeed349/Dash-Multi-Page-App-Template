@@ -1,0 +1,7 @@
+psycopg2-binary
+mlflow
+xgboost
+boto3
+oandapyV20
+backtrader
+v20

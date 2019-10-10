@@ -1,0 +1,125 @@
+version: "3"
+services:
+    minio-image:
+        container_name: minio-image
+        build:
+            context: ./dockerfile_minio
+        working_dir: "/minio-image/storage"
+        volumes:
+            - ${WD}/minio/storage:/minio-image/storage
+        ports:
+            - "9000:9000"
+        environment:
+            MINIO_ACCESS_KEY: minio-image
+            MINIO_SECRET_KEY: minio-image-pass
+        command: server /minio-image/storage
+
+    mlflow-image:
+        container_name: "mlflow-image"
+        build:
+            context: ./dockerfile_mlflowserver
+        working_dir: "/mlflow-image"
+        volumes:
+            - ${WD}/mlflow:/mlflow-image
+        environment:
+            MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
+            AWS_ACCESS_KEY_ID: minio-image
+            AWS_SECRET_ACCESS_KEY: minio-image-pass
+        ports:
+            - "5500:5500"
+        command: mlflow server --host 0.0.0.0 --port 5500 --backend-store-uri /mlflow-image/mlruns 
+
+
+    jupyter-image:
+        container_name: "jupyter-image"
+        build:
+            context: ./dockerfile_jupyter_notebook
+        volumes:
+            - ${WD}/notebooks:/home/jovyan/work
+            - ${WD}/mlflow:/mlflow-image
+        environment:
+            MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
+            AWS_ACCESS_KEY_ID: minio-image
+            AWS_SECRET_ACCESS_KEY: minio-image-pass
+        ports:    
+            - "8888:8888"
+
+
+    redis:
+        image: redis
+        restart: always
+        volumes:
+            - redis:/data
+
+    superset:
+        image: amancevice/superset
+        container_name: "superset"
+        restart: always
+        depends_on:
+            - redis
+        environment:
+            MAPBOX_API_KEY: ${MAPBOX_API_KEY}
+            SUPERSET_HOME: /etc/superset
+        ports:
+            - "8088:8088"
+        volumes:
+            - ${WD}/superset/superset_config.py:/etc/superset/superset_config.py
+            - ${WD}/superset/superset.db:/var/lib/superset/superset.db              
+        
+    postgres_secmaster:
+        image: postgres
+        container_name: "my_postgres"
+        ports:
+            - 5432:5432
+        environment:
+            - SHARED_PASSWORD=password # these are the 2 user password
+            - POSTGRES_PASSWORD=secret
+        volumes:
+            - ${WD}/postgress_db/scripts/:/docker-entrypoint-initdb.d/ 
+            - pg_data:/var/lib/postgresql/data
+
+    pgadmin:
+        image: dpage/pgadmin4
+        container_name: "pgadmin"
+        environment:
+            PGADMIN_DEFAULT_EMAIL: "saeed349@gmail.com"
+            PGADMIN_DEFAULT_PASSWORD: "pgadmin"
+        volumes:
+            - ${WD}/pgadmin/:/var/lib/pgadmin 
+        ports:
+            - 1234:80
+        depends_on:
+            - postgres_secmaster
+    
+    postgres:
+        image: postgres
+        container_name: "airflow_postgres"
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow   
+        volumes:
+            - pg_data_airflow:/var/lib/postgresql/data
+            
+    airflow:
+        container_name: "my_airflow"
+        build:
+            context: ./dockerfile_airflow
+        restart: always
+        depends_on:
+            - postgres
+        environment:
+            - LOAD_EX=n
+            - EXECUTOR=Sequential
+        volumes:
+            - ${WD}/airflow/dags:/usr/local/airflow/dags
+        ports:
+            - 8080:8080
+        command: webserver
+
+volumes:
+    pg_data:
+        external: true
+    pg_data_airflow:
+        external: true
+    redis:
