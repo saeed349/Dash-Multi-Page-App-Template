@@ -2,6 +2,9 @@
 
 ## Instructions to Run
 
+docker volume create pg_data
+pg_data_airflow
+redis
 
 cd /d/Google\ drive/Business/Repos/trading-infrastructure/
 docker-compose up -d
