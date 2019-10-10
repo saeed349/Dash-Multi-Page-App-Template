@@ -13,7 +13,7 @@ from backtrader.utils.py3 import (integer_types, queue, string_types,
                                   with_metaclass)
 from backtrader.metabase import MetaParams
 
-from ..stores import oandav20store
+from btoandav20.stores import oandav20store
 
 class MetaOandaV20Data(DataBase.__class__):
     def __init__(cls, name, bases, dct):
@@ -148,10 +148,7 @@ class OandaV20Data(with_metaclass(MetaOandaV20Data, DataBase)):
 
     def __init__(self, **kwargs):
         self.o = self._store(**kwargs)
-        if self.p.bidask:
-            self._candleFormat = 'A' if self.p.useask else 'B'
-        else:
-            self._candleFormat = 'M'
+        self._candleFormat = 'B' if self.p.bidask else 'M'
 
     def setenvironment(self, env):
         '''Receives an environment (cerebro) and passes it over to the store it
@@ -189,8 +186,6 @@ class OandaV20Data(with_metaclass(MetaOandaV20Data, DataBase)):
 
         if self.p.backfill_from is not None:
             self._state = self._ST_FROM
-            self._st_start(True)
-            self.p.backfill_from.setenvironment(self._env)
             self.p.backfill_from._start()
         else:
             self._start_finish()
