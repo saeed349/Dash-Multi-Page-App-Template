@@ -107,7 +107,7 @@ class TestStrategy(bt.Strategy):
                  (trade.pnl, trade.pnlcomm))
 
     def next(self):
-        print("PODA ",datetime.now())
+        # print("PODA ",datetime.now())
         # Simply log the closing price of the series from the reference
         self.log('Close, %.5f' % self.dataclose[0])
 
@@ -148,7 +148,7 @@ if __name__ == '__main__':
     todate=datetime(2019,6,5)
     # data = bt.feeds.PandasData(dataname=df,timeframe=bt.TimeFrame.Days,openinterest=None)
     # data1 = bt_datafeed_postgres.PostgreSQL_Minute(dbHost=db_host,dbUser=db_user,dbPWD=db_password,dbName=db_name,ticker='USD_JPY',fromdate=fromdate)#,todate=todate
-    data1 = bt_datafeed_postgres.PostgreSQL_Minute(dbHost=db_host,dbUser=db_user,dbPWD=db_password,dbName=db_name)
+    # data1 = bt_datafeed_postgres.PostgreSQL_Minute(dbHost=db_host,dbUser=db_user,dbPWD=db_password,dbName=db_name)
 
     # Create a cerebro entity
     cerebro = bt.Cerebro()
@@ -165,8 +165,8 @@ if __name__ == '__main__':
         dataname = "USD_JPY",
         timeframe = bt.TimeFrame.Minutes,
         compression=1,tz=pytz.timezone('US/Eastern')
-        ,backfill_from = data1
-        ,fromdate = datetime(2019,7,1)
+        # ,backfill_from = data1
+        ,fromdate = datetime(2018,10,1)
         # backfill_start=False
         # , backfill=False
         # compression = 30,
