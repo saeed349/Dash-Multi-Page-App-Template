@@ -16,6 +16,25 @@ import pytz
 api_key = cred.token_prac
 account_number = cred.acc_id_prac
 
+import psycopg2
+import bt_datafeed_postgres
+import os
+
+def load_db_credential_info(f_name_path):
+    """
+    load text file holding our database credential info and the database name
+    args:
+        f_name_path: name of file preceded with "\\", type string
+    returns:
+        array of 4 values that should match text file info
+    """
+    cur_path = os.getcwd()
+    # lets load our database credentials and info
+    f = open(cur_path + f_name_path, 'r')
+    lines = f.readlines()[1:]
+    lines = lines[0].split(',')
+    return lines
+
 
 # Create a Stratey
 class TestStrategy(bt.Strategy):
@@ -38,10 +57,17 @@ class TestStrategy(bt.Strategy):
         self.order = None
         self.buyprice = None
         self.buycomm = None
+        self.datastatus = 0
 
         # Add a MovingAverageSimple indicator
         self.sma = bt.indicators.SimpleMovingAverage(
             self.datas[0], period=self.params.maperiod)
+
+    def notify_data(self, data, status, *args, **kwargs):
+        print('*' * 5, 'DATA NOTIF:', data._getstatusname(status), *args)
+        if status == data.LIVE:
+            # self.counttostop = self.p.stopafter
+            self.datastatus = 1
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -81,7 +107,7 @@ class TestStrategy(bt.Strategy):
                  (trade.pnl, trade.pnlcomm))
 
     def next(self):
-        print(datetime.now())
+        print("PODA ",datetime.now())
         # Simply log the closing price of the series from the reference
         self.log('Close, %.5f' % self.dataclose[0])
 
@@ -90,7 +116,7 @@ class TestStrategy(bt.Strategy):
             return
 
         # Check if we are in the market
-        if not self.position:
+        if self.datastatus and not self.position:
 
             # Not yet ... we MIGHT BUY if ...
             if self.dataclose[0] > self.sma[0]:
@@ -101,22 +127,29 @@ class TestStrategy(bt.Strategy):
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.buy()
 
-        else:
+        # else:
 
-            if self.dataclose[0] < self.sma[0]:
+            elif self.dataclose[0] < self.sma[0]:
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.5f' % self.dataclose[0])
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
 
-    def notify_data(self, data, status, *args, **kwargs):
-
-        if status == data.LIVE:  # the data has switched to live data
-           # do something
-           pass
 
 if __name__ == '__main__':
+
+
+    db_info_file = "database_info.txt"
+    db_info_file_p = "/"+db_info_file
+    # necessary database info to connect
+    db_host, db_user, db_password, db_name = load_db_credential_info(db_info_file_p)
+    fromdate=datetime(2019,7,30)
+    todate=datetime(2019,6,5)
+    # data = bt.feeds.PandasData(dataname=df,timeframe=bt.TimeFrame.Days,openinterest=None)
+    # data1 = bt_datafeed_postgres.PostgreSQL_Minute(dbHost=db_host,dbUser=db_user,dbPWD=db_password,dbName=db_name,ticker='USD_JPY',fromdate=fromdate)#,todate=todate
+    data1 = bt_datafeed_postgres.PostgreSQL_Minute(dbHost=db_host,dbUser=db_user,dbPWD=db_password,dbName=db_name)
+
     # Create a cerebro entity
     cerebro = bt.Cerebro()
 
@@ -129,10 +162,13 @@ if __name__ == '__main__':
     cerebro.broker = oandastore.getbroker()
 
     data = oandastore.getdata(
-        dataname = "EUR_USD",
+        dataname = "USD_JPY",
         timeframe = bt.TimeFrame.Minutes,
         compression=1,tz=pytz.timezone('US/Eastern')
-        # backfill_start=False, backfill=False
+        ,backfill_from = data1
+        ,fromdate = datetime(2019,7,1)
+        # backfill_start=False
+        # , backfill=False
         # compression = 30,
         # fromdate = datetime(2018,11,1),
         # todate=datetime(2019,6,30)
