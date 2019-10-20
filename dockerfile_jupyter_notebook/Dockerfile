@@ -9,6 +9,7 @@ RUN pip install --requirement /tmp/requirements.txt && \
     apt update && \
     apt-get install curl -y
 
+ENV PYTHONPATH "${PYTHONPATH}:/home/jovyan/work/pack"
     
 CMD ["jupyter", "notebook", "--no-browser","--NotebookApp.token=''","--NotebookApp.password=''", "--allow-root"]
 

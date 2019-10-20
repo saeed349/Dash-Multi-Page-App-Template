@@ -5,3 +5,4 @@ boto3
 oandapyV20
 backtrader
 v20
+pyfolio

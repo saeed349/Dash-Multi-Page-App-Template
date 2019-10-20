@@ -40,9 +40,11 @@ services:
         environment:
             MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
             AWS_ACCESS_KEY_ID: minio-image
-            AWS_SECRET_ACCESS_KEY: minio-image-pass
+            AWS_SECRET_ACCESS_KEY: minio-image-pass            
+
         ports:    
             - "8888:8888"
+        # command: "echo ${WD}/notebooks"
 
 
     redis:
