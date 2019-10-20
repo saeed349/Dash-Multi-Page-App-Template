@@ -75,7 +75,7 @@ services:
             - 5432:5432
         environment:
             - SHARED_PASSWORD=password # these are the 2 user password
-            - POSTGRES_PASSWORD=secret
+            - POSTGRES_PASSWORD=posgres349
         volumes:
             - ${WD}/postgress_db/scripts/:/docker-entrypoint-initdb.d/ 
             - pg_data:/var/lib/postgresql/data
@@ -104,6 +104,7 @@ services:
             - pg_data_airflow:/var/lib/postgresql/data
             
     airflow:
+        image: airflow
         container_name: "my_airflow"
         build:
             context: ./dockerfile_airflow
@@ -113,6 +114,7 @@ services:
         environment:
             - LOAD_EX=n
             - EXECUTOR=Local
+            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
         volumes:
             - ${WD}/airflow/dags:/usr/local/airflow/dags
         ports:

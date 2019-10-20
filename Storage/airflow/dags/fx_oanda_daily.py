@@ -24,28 +24,14 @@ import datetime
 import psycopg2
 import pandas as pd
 import os
-import cred
+
 from oandapyV20.contrib.factories import InstrumentsCandlesFactory
 import oandapyV20.endpoints.accounts as accounts
 import oandapyV20
-
+import q_credentials.db_secmaster_cred as db_secmaster_cred
+import q_credentials.oanda_cred as oanda_cred
 MASTER_LIST_FAILED_SYMBOLS = []
 
-def load_db_credential_info(f_name_path):
-    """
-    load text file holding our database credential info and the database name
-    args:
-        f_name_path: name of file preceded with "\\", type string
-    returns:
-        array of 4 values that should match text file info
-    """
-    cur_path = os.getcwd()
-    # lets load our database credentials and info
-    f = open(cur_path + f_name_path, 'r')
-    lines = f.readlines()[1:]
-    lines = lines[0].split(',')
-    return lines
-    
 def obtain_list_db_tickers(conn):
     """
     query our Postgres database table 'symbol' for a list of all tickers in our symbol table
@@ -89,11 +75,8 @@ def load_data(symbol, symbol_id, vendor_id, conn, start_date):
     return:
         None
     """
-    accountID=cred.acc_id_prac
-    access_token=cred.token_prac
-    api = oandapyV20.API(access_token=access_token)
-    client = oandapyV20.API(access_token=access_token)
 
+    client = oandapyV20.API(access_token=oanda_cred.token_practice)
     cur = conn.cursor()
     end_dt = datetime.datetime.now()
     
@@ -183,10 +166,10 @@ def main():
 
     initial_start_date = datetime.datetime(2010,12,30)
     
-    db_info_file = "database_info.txt"
-    db_info_file_p = "/dags/" + db_info_file
-    # necessary database info to connect
-    db_host, db_user, db_password, db_name = load_db_credential_info(db_info_file_p)
+    db_host=db_secmaster_cred.dbHost 
+    db_user=db_secmaster_cred.dbUser
+    db_password=db_secmaster_cred.dbPWD
+    db_name=db_secmaster_cred.dbName
 
     # connect to our securities_master database
     conn = psycopg2.connect(host=db_host, database=db_name, user=db_user, password=db_password)
@@ -197,9 +180,8 @@ def main():
 
 
     ticker_info_file = "interested_tickers.xlsx"
-    ticker_info_file_p = "/dags/" + ticker_info_file
-    cur_path = os.getcwd()
-    f = cur_path + ticker_info_file_p
+    cur_path = os.path.dirname(os.path.abspath(__file__))
+    f = os.path.join(cur_path,ticker_info_file)
     df_tickers=pd.read_excel(f,sheet_name='daily')
 
     if df_tickers.empty:
