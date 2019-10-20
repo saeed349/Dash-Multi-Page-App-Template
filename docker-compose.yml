@@ -36,6 +36,7 @@ services:
             context: ./dockerfile_jupyter_notebook
         volumes:
             - ${WD}/notebooks:/home/jovyan/work
+            - ${WD}/q_pack:/home/jovyan/work/q_pack # this is the package folder
             - ${WD}/mlflow:/mlflow-image
         environment:
             MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
@@ -117,6 +118,7 @@ services:
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
         volumes:
             - ${WD}/airflow/dags:/usr/local/airflow/dags
+            - ${WD}/q_pack:/usr/local/airflow/dags/q_pack
         ports:
             - 8080:8080
         command: webserver
