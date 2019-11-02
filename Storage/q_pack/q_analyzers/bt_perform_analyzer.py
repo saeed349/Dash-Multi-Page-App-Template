@@ -41,7 +41,7 @@ class trade_list(bt.Analyzer):
             pnl = trade.history[len(trade.history)-1].status.pnlcomm
             pnlpcnt = 100 * pnl / brokervalue
             barlen = trade.history[len(trade.history)-1].status.barlen
-            pbar = pnl / barlen
+            pbar = (pnl / barlen) if barlen else pnl # to avoid divide by 0 error
             self.cumprofit += pnl
 
             size = value = 0.0
@@ -61,7 +61,7 @@ class trade_list(bt.Analyzer):
                 mfe = -lp
                 mae = -hp
 
-            analyzer_result={'strategy':self.strategy.alias,'recorded_time':datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'ref': trade.ref, 'ticker': trade.data._name, 'direction': dir,
+            analyzer_result={'run_id':self.strategy.db_run_id,'strategy':self.strategy.alias,'recorded_time':datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'ref': trade.ref, 'ticker': trade.data._name, 'direction': dir,
                  'datein': datein, 'pricein': pricein, 'dateout': dateout, 'priceout': priceout,
                  'change_percentage': round(pcntchange, 2), 'pnl': pnl, 'pnl_percentage': round(pnlpcnt, 2),
                  'size': size, 'value': value, 'cumpnl': self.cumprofit,
@@ -80,20 +80,3 @@ class trade_list(bt.Analyzer):
 
 
             self.trades.append(analyzer_result)
-
-def insert_new_vendor(vendor, conn):
-    """
-    Create a new vendor in data_vendor table.
-    args:
-        vendor: name of our vendor, type string.
-        conn: a Postgres DB connection object
-    return:
-        None
-    """
-    todays_date = datetime.datetime.utcnow()
-    cur = conn.cursor()
-    cur.execute(
-                "INSERT INTO performance(name, created_date, last_updated_date) VALUES (%s, %s, %s)",
-                (vendor, todays_date, todays_date)
-                )
-    conn.commit()

@@ -61,8 +61,24 @@ def create_risk_tables(db_credential_info):
     if check_db_exists(db_credential_info):
         commands = (
                     """
+                    CREATE TABLE run_information (
+                        run_id SERIAL PRIMARY KEY,
+                        run_type TEXT NOT NULL,
+                        recorded_time TIMESTAMP NOT NULL NOT NULL,
+                        start_time TIMESTAMP NOT NULL NOT NULL,
+                        end_time TIMESTAMP NULL,
+                        strategy TEXT NOT NULL,
+                        tickers TEXT NOT NULL,
+                        indicators TEXT NULL,
+                        frequency TEXT NOT NULL,
+                        account TEXT NULL,
+                        log_file TEXT NULL
+                        )
+                    """,
+                    """
                     CREATE TABLE performance (
                         id SERIAL PRIMARY KEY,
+                        run_id INTEGER NOT NULL,
                         recorded_time TIMESTAMP NOT NULL,
                         strategy TEXT NOT NULL,
                         ref INTEGER NULL,
@@ -81,19 +97,23 @@ def create_risk_tables(db_credential_info):
                         nbars INTEGER NOT NULL,
                         pnl_per_bar VARCHAR(64) NULL,
                         mfe_percentage  VARCHAR(64) NULL,
-                        mae_percentage VARCHAR(64) NULL
+                        mae_percentage VARCHAR(64) NULL,
+                        FOREIGN KEY (run_id) REFERENCES run_information(run_id)
                         )
                     """,
                     """
                     CREATE TABLE positions (
                         id SERIAL PRIMARY KEY,
+                        run_id INTEGER NOT NULL,
                         recorded_time TIMESTAMP NOT NULL,
                         strategy TEXT NOT NULL,
                         transaction_date TIMESTAMP NOT NULL,
-                        amount VARCHAR(64) NULL,
+                        size VARCHAR(64) NULL,
+                        price VARCHAR(64) NULL,
                         sid INTEGER NOT NULL,
                         ticker TEXT NOT NULL,
-                        value VARCHAR(64) NULL
+                        value VARCHAR(64) NULL,
+                        FOREIGN KEY (run_id) REFERENCES run_information(run_id)
                         )
                     """
                     )
@@ -122,6 +142,7 @@ def main():
     db_user=db_risk_cred.dbUser
     db_password=db_risk_cred.dbPWD
     db_name=db_risk_cred.dbName
+    
     # first lets create our database from postgres
     create_db([db_host, db_user, db_password, db_name])
     
