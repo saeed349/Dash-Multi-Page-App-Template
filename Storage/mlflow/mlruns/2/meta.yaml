@@ -1,0 +1,4 @@
+artifact_location: /mlflow-image/mlruns/2
+experiment_id: '2'
+lifecycle_stage: active
+name: mlflow-minio-test_2

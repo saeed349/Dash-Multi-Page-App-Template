@@ -1,0 +1,4 @@
+artifact_location: minio-image:9000
+experiment_id: '3'
+lifecycle_stage: active
+name: mlflow-minio-test_3

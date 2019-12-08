@@ -87,14 +87,14 @@ class St(bt.Strategy):
             ml_log_file = "ml_log.csv"
             # cur_path = os.path.dirname(os.path.abspath(__file__))
             df=pd.DataFrame(self.ml_log)
-            df.to_csv(os.path.join(os.getcwd(),ml_log_file))
+            df.to_csv(os.path.join(os.getcwd(),ml_log_file),index=False)
 
     def next(self):
         for i, d in enumerate(self.datas):
             dt, dn = self.datetime.datetime(), d._name
             pos = self.getposition(d).size
             # print('{} {} Position {}'.format(dt, dn, pos))
-            self.save_down({'time':self.datetime.datetime(),'ticker':dn,'close':d.close[0],'sma1':self.sma[i][0]})
+            self.save_down({'time':self.datetime.datetime(),'ticker':dn,'close':d.close[0],'sma1':self.sma[i][0],'sma2':self.sma2[i][0]})
             self.log('Price: {:.2f}, SMA: {}, Ticker:{}'.format(d.close[0],self.sma[0].PriceClose,dn))
 
             # if not pos:  # no market / no orders

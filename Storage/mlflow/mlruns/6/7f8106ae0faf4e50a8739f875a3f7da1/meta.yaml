@@ -1,0 +1,15 @@
+artifact_uri: s3:minio-image:9000/mlflow-models/7f8106ae0faf4e50a8739f875a3f7da1/artifacts
+end_time: 1575135196671
+entry_point_name: ''
+experiment_id: '6'
+lifecycle_stage: active
+name: ''
+run_id: 7f8106ae0faf4e50a8739f875a3f7da1
+run_uuid: 7f8106ae0faf4e50a8739f875a3f7da1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1575135194748
+status: 4
+tags: []
+user_id: root

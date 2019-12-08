@@ -1,0 +1,4 @@
+artifact_location: s3://mlflow-models
+experiment_id: '9'
+lifecycle_stage: active
+name: mlflow-minio-test_7.1
