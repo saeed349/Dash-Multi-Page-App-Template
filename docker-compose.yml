@@ -74,7 +74,7 @@ services:
         container_name: "my_postgres"
         ports:
             - 5431:5431                
-            # - 5432:5432 # original
+            # - 5432:5432 # original 
         environment:
             - SHARED_PASSWORD=password # these are the 2 user password
             - POSTGRES_PASSWORD=posgres349

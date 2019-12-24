@@ -48,7 +48,7 @@ if __name__ == "__main__":
     
     mlflow.tracking.set_tracking_uri('http://mlflow-image:5500')
     # mlflow.tracking.set_tracking_uri('http://localhost:5000')
-    # mlflow.set_experiment('mlflow-minio-test_7.1')
+    mlflow.set_experiment('mlflow-minio-test_7.1') # comment it when packaging
     
     with mlflow.start_run():
         lr = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, random_state=42)
