@@ -18,7 +18,7 @@ import pytz
 from tabulate import tabulate
 
 import q_datafeeds.bt_datafeed_postgres as bt_datafeed_postgres
-import q_strategies.simple_strategy as my_strats
+import q_strategies.simple_strategy_2 as my_strats
 import q_credentials.oanda_cred as oanda_cred
 import q_credentials.db_secmaster_cred as db_cred
 import q_analyzers.bt_perform_analyzer as bt_analyzers
@@ -26,7 +26,7 @@ import q_analyzers.bt_transaction_analyzer as bt_trans_analyzer
 import q_analyzers.bt_strategy_id_analyzer as bt_strategy_id_analyzer
 import q_analyzers.bt_logger_analyzer as bt_logger_analyzer
 
-def run(args=None):
+def run(args=None): 
     args = parse_args(args)
 
     cerebro = bt.Cerebro()
@@ -69,9 +69,6 @@ def run(args=None):
         for ticker in ticker_list:
             data = bt_datafeed_postgres.PostgreSQL_Daily(dbHost=db_cred.dbHost,dbUser=db_cred.dbUser,dbPWD=db_cred.dbPWD,dbName=db_cred.dbName,ticker=ticker, name=ticker,**dkwargs)
             cerebro.adddata(data)
-        # ticker_info_file = "ml_data_logger.csv"
-        # cur_path = os.path.dirname(os.path.abspath(__file__))
-        # cerebro.addwriter(bt.WriterFile, csv=True,out=os.path.join(cur_path,ticker_info_file))
         cerebro.broker.setcash(args.cash)
         cerebro.addstrategy(my_strats.St, **eval('dict(' + args.strat + ')'))
  
@@ -88,9 +85,10 @@ def run(args=None):
     print('Profit ... or Loss: {:.2f}'.format(pnl))
 
     strats = results
-    # cerebro.plot(style='candlestick',iplot=False,volume=False)
-    trade_list = strats[0].analyzers.position_list.get_analysis()
-    print (tabulate(trade_list, headers="keys"))
+    cerebro.plot(style='candlestick',iplot=False,volume=False)
+    # trade_list = strats[0].analyzers.position_list.get_analysis()
+    # print (tabulate(trade_list, headers="keys"))
+
 
 def parse_args(pargs=None):
     parser = argparse.ArgumentParser(
@@ -98,14 +96,14 @@ def parse_args(pargs=None):
         description=('Rebalancing with the Conservative Formula'),
     )
 
-    parser.add_argument('--tickers', nargs='*' ,required=False,default='EUR_USD,GBP_USD', type=str, #,GBP_USD,USD_JPY
+    parser.add_argument('--tickers', nargs='*' ,required=False,default='EUR_USD', type=str, #,GBP_USD,USD_JPY
                         help='Pass the tickers with space')
 
     parser.add_argument('--dargs', default='',
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
 
     # Defaults for dates
-    parser.add_argument('--fromdate', required=False, default='2019-1-1',
+    parser.add_argument('--fromdate', required=False, default='2010-1-1',
                         help='Date[time] in YYYY-MM-DD[THH:MM:SS] format')
 
     parser.add_argument('--todate', required=False, default='2019-7-30',
@@ -114,10 +112,10 @@ def parse_args(pargs=None):
     parser.add_argument('--cerebro', required=False, default='',
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
 
-    parser.add_argument('--cash', default=100.0, type=float,
+    parser.add_argument('--cash', default=10000, type=float,
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
 
-    parser.add_argument('--strat', required=False, default='ml_log=True', # backtest=False
+    parser.add_argument('--strat', required=False, default='ml_log=True,ml_serving=True', # backtest=False
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
     
     parser.add_argument('--live', required=False, default=False,
