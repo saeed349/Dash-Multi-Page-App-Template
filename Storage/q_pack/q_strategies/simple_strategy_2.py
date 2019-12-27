@@ -15,7 +15,7 @@ class St(bt.Strategy):
         backtest=True,
         ml_log=False,
         ml_serving=False,
-        model_uri="s3://mlflow-models/074687ad169b4e85b3408dd65d0f6ff5/artifacts/model"
+        model_uri="074687ad169b4e85b3408dd65d0f6ff5"
     )
 
 
@@ -25,7 +25,7 @@ class St(bt.Strategy):
         
 
     def __init__(self):
-        self.ml_log = []
+        self.ml_log = []    
         self.db_run_id = None
         self.rsi = [bt.indicators.RSI(d, period=30) for d in self.datas]
 
@@ -48,7 +48,7 @@ class St(bt.Strategy):
             self.datastatus = 0
 
         if self.p.ml_serving:
-            self.model_predict=mlflow.pyfunc.load_model(model_uri=self.p.model_uri) 
+            self.model_predict=mlflow.pyfunc.load_model(model_uri=("s3://mlflow-models/"+self.p.model_uri+"/artifacts/model"))
 
 
     def notify_data(self, data, status, *args, **kwargs):

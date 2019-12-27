@@ -18,7 +18,7 @@ import pytz
 from tabulate import tabulate
 
 import q_datafeeds.bt_datafeed_postgres as bt_datafeed_postgres
-import q_strategies.simple_strategy_2 as my_strats
+from q_strategies import *
 import q_credentials.oanda_cred as oanda_cred
 import q_credentials.db_secmaster_cred as db_cred
 import q_analyzers.bt_perform_analyzer as bt_analyzers
@@ -41,7 +41,7 @@ def run(args=None):
     dtfmt, tmfmt = '%Y-%m-%d', 'T%H:%M:%S'
     if args.fromdate:
         fmt = dtfmt + tmfmt * ('T' in args.fromdate)
-        dkwargs['fromdate'] = datetime.datetime.strptime(args.fromdate, fmt)
+        dkwargs['fromdate'] = datetime.datetime.strptime(args.fromdate, fmt)    
 
     if args.todate:
         fmt = dtfmt + tmfmt * ('T' in args.todate)
@@ -49,7 +49,6 @@ def run(args=None):
 
     cerebro.addanalyzer(bt_analyzers.trade_list, _name='performance_list')
     cerebro.addanalyzer(bt_trans_analyzer.transactions_analyzer,_name='position_list')
-    # cerebro.addanalyzer(bt_logger_analyzer.logger_analyzer,_name='logger_writing') # this is for logging, not using at the moment
     cerebro.addanalyzer(bt_strategy_id_analyzer.strategy_id_analyzer,_name='strategy_id')
     cerebro.addanalyzer(bt_logger_analyzer.logger_analyzer,_name='ml_logger')
 
@@ -57,12 +56,12 @@ def run(args=None):
 
     # necessary database info to connect
     if args.live:
-        oandastore = btoandav20.stores.OandaV20Store(token=oanda_cred.token_practice, account=oanda_cred.acc_id_practice, practice=True)
+        oandastore = btoandav20.stores.OandaV20Store(token=args.broker_token, account=args.broker_account, practice=True)
         for ticker in ticker_list:
             data = oandastore.getdata(dataname = ticker,timeframe = bt.TimeFrame.Minutes,compression=1,tz=pytz.timezone('US/Eastern'))#,fromdate = datetime.datetime(2019,10,15)
             cerebro.adddata(data)
         cerebro.broker = oandastore.getbroker()
-        cerebro.addstrategy(my_strats.St, backtest=False)
+        # cerebro.addstrategy(bt_strategies.simple_strategy_2.St, backtest=False)
 
     elif not args.live:
 
@@ -70,7 +69,8 @@ def run(args=None):
             data = bt_datafeed_postgres.PostgreSQL_Daily(dbHost=db_cred.dbHost,dbUser=db_cred.dbUser,dbPWD=db_cred.dbPWD,dbName=db_cred.dbName,ticker=ticker, name=ticker,**dkwargs)
             cerebro.adddata(data)
         cerebro.broker.setcash(args.cash)
-        cerebro.addstrategy(my_strats.St, **eval('dict(' + args.strat + ')'))
+        cerebro.addstrategy(globals()[args.strat_name].St, **eval('dict(' + args.strat_param + ')'))
+        # cerebro.addstrategy(bt_strategies.simple_strategy_2.St, **eval('dict(' + args.strat + ')'))
  
     
 
@@ -85,7 +85,7 @@ def run(args=None):
     print('Profit ... or Loss: {:.2f}'.format(pnl))
 
     strats = results
-    cerebro.plot(style='candlestick',iplot=False,volume=False)
+    # cerebro.plot(style='candlestick',iplot=False,volume=False)
     # trade_list = strats[0].analyzers.position_list.get_analysis()
     # print (tabulate(trade_list, headers="keys"))
 
@@ -115,11 +115,20 @@ def parse_args(pargs=None):
     parser.add_argument('--cash', default=10000, type=float,
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
 
-    parser.add_argument('--strat', required=False, default='ml_log=True,ml_serving=True', # backtest=False
+    parser.add_argument('--strat_name', required=False, default='simple_strategy_2', 
+                        metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
+
+    parser.add_argument('--strat_param', required=False, default='ml_log=True,ml_serving=False', # backtest=False
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
     
     parser.add_argument('--live', required=False, default=False,
                         help='Live or Backtest')
+
+    parser.add_argument('--broker_token', required=False, default=oanda_cred.token_practice,
+                        help='Oanda Broker Token id')
+
+    parser.add_argument('--broker_account', required=False, default=oanda_cred.acc_id_practice,
+                        help='Oanda Broker Account id')
 
 
     return parser.parse_args(pargs)
