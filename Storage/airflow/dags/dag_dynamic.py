@@ -32,7 +32,7 @@ def create_dag(dag_id,
             command['--broker_token']=row['Token']
             command['--broker_account']=row['Account']
             command['--strat_param']=row['Strategy Parameters']
-            final_commmand='python /usr/local/airflow/dags/12_Clean_Strategy_BT.py '+' '.join([(k+"="+v) for k, v in command.items() if v!=''])
+            final_commmand='python /usr/local/airflow/dags/q_pack/q_run/12_Clean_Strategy_BT.py '+' '.join([(k+"="+v) for k, v in command.items() if v!=''])
             tab = BashOperator(
                 bash_command=final_commmand,
                 task_id=(row['Strategy']+str(i)),
