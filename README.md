@@ -22,7 +22,7 @@ docker volume create pg_data_airflow
 docker volume create redis
 
 cd /d/Google\ drive/Business/Repos/Quant-Trading-Infrastructure/
-docker-compose up -d
+docker-compose up -d --build
 
 
 docker-machine ssh
