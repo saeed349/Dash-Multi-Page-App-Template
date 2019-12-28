@@ -15,11 +15,10 @@ class logger_analyzer(bt.Analyzer):
         ml_list=[]
         data_size=len(self.data)
         num_of_sec=len(self.datas)
-        if self.strategy.p.backtest and self.strategy.p.ml_log: 
-            data_size=len(self.data)      
+        if self.strategy.p.backtest and self.strategy.p.ml_log:   
             for i, d in enumerate(self.datas):
                 ml_dict={}
-                print(d)
+                data_size=len(d)
                 ml_dict["security"]=[d._name]*data_size
                 ml_dict["datetime"]=[self.data.num2date(x) for x in self.data.datetime.get(size=data_size)]
                 ml_dict["close"]=d.get(size=data_size)
