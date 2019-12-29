@@ -80,7 +80,9 @@ def load_data(symbol, symbol_id, vendor_id, conn, start_date):
     client = oandapyV20.API(access_token=oanda_cred.token_practice)
     cur = conn.cursor()
     end_dt = datetime.datetime.now()
-    
+    if end_dt.isoweekday() in set((6, 7)): # to take the nearest weekday
+        end_dt -= datetime.timedelta(days=end_dt.isoweekday() % 5)
+        
     try:
         data = oanda_historical_data(instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=end_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
         # data = yf.download(symbol, start=start_dt, end=end_dt)

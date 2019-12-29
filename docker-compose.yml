@@ -4,6 +4,7 @@ services:
         container_name: minio-image
         build:
             context: ./dockerfile_minio
+        restart: always
         working_dir: "/minio-image/storage"
         volumes:
             - ${WD}/minio/storage:/minio-image/storage
@@ -36,7 +37,7 @@ services:
             context: ./dockerfile_jupyter_notebook
         volumes:
             - ${WD}/notebooks:/home/jovyan/work
-            - ${WD}/q_pack:/home/jovyan/work/q_pack # this is the package folder
+            - ${WD}/q_pack:/home/jovyan/work/q_pack
             - ${WD}/mlflow:/mlflow-image
         environment:
             MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
@@ -45,7 +46,6 @@ services:
             MLFLOW_TRACKING_URI: http://mlflow-image:5500        
         ports:    
             - "8888:8888"
-        # command: "echo ${WD}/notebooks"
 
 
     redis:
@@ -75,9 +75,8 @@ services:
         container_name: "my_postgres"
         ports:
             - 5431:5431                
-            # - 5432:5432 # original 
         environment:
-            - SHARED_PASSWORD=password # these are the 2 user password
+            - SHARED_PASSWORD=password
             - POSTGRES_PASSWORD=posgres349
         volumes:
             - ${WD}/postgress_db/scripts/:/docker-entrypoint-initdb.d/ 
