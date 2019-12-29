@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 services:
     minio-image:
         container_name: minio-image
@@ -55,8 +55,9 @@ services:
             - redis:/data
 
     superset:
-        image: amancevice/superset
         container_name: "superset"
+        build:
+            context: ./dockerfile_superset
         restart: always
         depends_on:
             - redis
@@ -126,7 +127,11 @@ services:
 
 volumes:
     pg_data:
-        external: true
+        external: false
+        name: pg_data
     pg_data_airflow:
-        external: true
+        external: false
+        name: pg_data_airflow
     redis:
+        external: false
+        name: redis

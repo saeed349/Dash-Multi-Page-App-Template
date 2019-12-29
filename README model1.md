@@ -1,4 +1,4 @@
-# Trading-Infrastructure - Testing 
+# Trading-Infrastructure
 
 ## Docker Toolbox
 docker-machine rm default
