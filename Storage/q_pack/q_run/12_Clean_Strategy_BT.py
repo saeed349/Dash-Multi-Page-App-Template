@@ -25,22 +25,17 @@ import q_analyzers.bt_perform_analyzer as bt_analyzers
 import q_analyzers.bt_transaction_analyzer as bt_trans_analyzer
 import q_analyzers.bt_strategy_id_analyzer as bt_strategy_id_analyzer
 import q_analyzers.bt_logger_analyzer as bt_logger_analyzer
+import q_tools.args_parse_other as args_parse_other
 
 def run(args=None): 
     args = parse_args(args)
-
-    print(args.tickers)
 
     cerebro = bt.Cerebro()
 
     # Data feed kwargs
     dkwargs = dict(**eval('dict(' + args.dargs + ')'))
 
-    # tickers = [itemfor item in args.tickers.split(',')]
-    # ticker_list = args.tickers.split(',')
     ticker_list=args.tickers[0].split(',')
-
-    print(ticker_list)
 
     # Parse from/to-date
     dtfmt, tmfmt = '%Y-%m-%d', 'T%H:%M:%S'
@@ -55,7 +50,10 @@ def run(args=None):
     cerebro.addanalyzer(bt_analyzers.trade_list, _name='performance_list')
     cerebro.addanalyzer(bt_trans_analyzer.transactions_analyzer,_name='position_list')
     cerebro.addanalyzer(bt_strategy_id_analyzer.strategy_id_analyzer,_name='strategy_id')
-    cerebro.addanalyzer(bt_logger_analyzer.logger_analyzer,_name='ml_logger')
+    print(args.ml_log)
+    print(type(args.ml_log))
+    if args.ml_log:
+        cerebro.addanalyzer(bt_logger_analyzer.logger_analyzer,_name='ml_logger')
 
 
 
@@ -74,7 +72,8 @@ def run(args=None):
             data = bt_datafeed_postgres.PostgreSQL_Daily(dbHost=db_cred.dbHost,dbUser=db_cred.dbUser,dbPWD=db_cred.dbPWD,dbName=db_cred.dbName,ticker=ticker, name=ticker,**dkwargs)
             cerebro.adddata(data)
         cerebro.broker.setcash(args.cash)
-        cerebro.addstrategy(globals()[args.strat_name].St, **eval('dict(' + args.strat_param + ')'))
+        # cerebro.addstrategy(globals()[args.strat_name].St, **eval('dict(' + args.strat_param + ')'))
+        cerebro.addstrategy(globals()[args.strat_name].St, **args.strat_param)
  
     
 
@@ -122,8 +121,14 @@ def parse_args(pargs=None):
     parser.add_argument('--strat_name', required=False, default='simple_strategy_2', 
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
 
-    parser.add_argument('--strat_param', required=False, default='ml_log=True,ml_serving=False', # backtest=False
-                        metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
+    # parser.add_argument('--strat_param', required=False, default='ml_log=True,ml_serving=False', # backtest=False
+    #                     metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
+
+    parser.add_argument('--strat_param', required=False, default='ml_serving=False', # backtest=False
+                        action=args_parse_other.StoreDictKeyPair, metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
+
+    parser.add_argument('--ml_log', required=False, default=False, type=args_parse_other.str2bool, const=True, nargs='?',
+                        help='To save ML log or not')
     
     parser.add_argument('--mode', required=False, default='backtest',
                         help='Live or Backtest')

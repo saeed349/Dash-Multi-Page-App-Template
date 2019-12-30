@@ -13,9 +13,8 @@ class St(bt.Strategy):
         period=10,
         limdays=200,
         backtest=True,
-        ml_log=False,
         ml_serving=False,
-        model_uri="074687ad169b4e85b3408dd65d0f6ff5"
+        model_uri="24cbdab283244fac8d54405d58b2bbf1"
     )
 
 
@@ -24,8 +23,7 @@ class St(bt.Strategy):
             print('{} {}'.format(self.datetime.datetime(), arg))
         
 
-    def __init__(self):
-        self.ml_log = []    
+    def __init__(self): 
         self.db_run_id = None
         self.rsi = [bt.indicators.RSI(d, period=30) for d in self.datas]
 
@@ -48,6 +46,7 @@ class St(bt.Strategy):
             self.datastatus = 0
 
         if self.p.ml_serving:
+            print("s3://mlflow-models/"+self.p.model_uri+"/artifacts/model")
             self.model_predict=mlflow.pyfunc.load_model(model_uri=("s3://mlflow-models/"+self.p.model_uri+"/artifacts/model"))
 
 

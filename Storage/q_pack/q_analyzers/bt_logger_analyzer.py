@@ -15,7 +15,7 @@ class logger_analyzer(bt.Analyzer):
         ml_list=[]
         data_size=len(self.data)
         num_of_sec=len(self.datas)
-        if self.strategy.p.backtest and self.strategy.p.ml_log:   
+        if self.strategy.p.backtest:   
             for i, d in enumerate(self.datas):
                 ml_dict={}
                 data_size=len(d)
@@ -27,9 +27,6 @@ class logger_analyzer(bt.Analyzer):
                     ml_dict[self.strategy.getindicators()[j*num_of_sec+i].aliased]=self.strategy.getindicators()[j*num_of_sec+i].get(size=data_size) # tested for 3 conditions , indicators >,<,= securities
                 ml_list.append(pd.DataFrame(ml_dict))  
             ml_df = pd.concat(ml_list)
-            # ml_dict_file = str(self.strategy.db_run_id)+"_ml_log.csv" # bactest/live id need to be appended
-            # cur_path = os.path.dirname(os.path.abspath(__file__))
-            # ml_df.to_csv(os.path.join(os.getcwd(),ml_dict_file),index=False)
 
             s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
             Bucket="model-support-files"
@@ -37,4 +34,5 @@ class logger_analyzer(bt.Analyzer):
             csv_buffer = StringIO()
             ml_df.to_csv(csv_buffer,index=False)
             s3.put_object(Bucket=Bucket, Key=Key,Body=csv_buffer.getvalue())
+            print("ML Log Saved in Minio Bucket:",Bucket,"as",Key)
             

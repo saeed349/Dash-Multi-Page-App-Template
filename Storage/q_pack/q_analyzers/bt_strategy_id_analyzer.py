@@ -26,7 +26,6 @@ class strategy_id_analyzer(bt.Analyzer):
         return self.strat_info
 
     def start(self):
-        print("Hello")
         info_run_type = 'Backtest' if self.strategy.p.backtest else 'Live'
         info_tickers=','.join([d for d in (self.strategy.getdatanames())])
         info_indicators = ','.join([i.aliased for i in (self.strategy.getindicators())])

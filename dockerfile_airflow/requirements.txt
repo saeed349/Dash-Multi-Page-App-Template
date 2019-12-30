@@ -6,3 +6,4 @@ v20
 mlflow==1.4.0
 minio
 boto3
+sklearn
