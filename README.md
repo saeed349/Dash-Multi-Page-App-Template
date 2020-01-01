@@ -1,8 +1,8 @@
 <p align="center">
-    <a href="https://appwrite.io" target="_blank"><img width="260" height="39" src="logo2.png" alt="Appwrite Logo"></a>
+    <a href="https://appwrite.io" target="_blank"><img width="260" height="39" src="images/logo.png" alt="Appwrite Logo"></a>
     <br />
     <br />
-    <b>Quant Trading Infrastructure for all your Machine Learning Trading Needs</b>
+    <b>Microservices Based Algorthmic Trading System</b>
     <br />
     <br />
 </p>
@@ -11,99 +11,122 @@
 
 ---
 
-Appwrite is a simple self-hosted backend server for web and mobile developers with a shiny dashboard and a very easy-to-use REST API.
+MBATS is a simple platform for developing, testing and deploying algorthmic trading strategies with a focus on Machine Learning based algorithms.
 
-Appwrite API services aim to make developer's life a lot easier by hiding the complexity of common and repetitive software development tasks.
+MBATS aim to make a Quant's life a lot easier by providing a modular easy to setup trading infrastrucutre based on open source tools that can get his/her trading strategy from idea to production within few minutes.
 
-Using Appwrite, you can easily manage user authentication with multiple sign-in methods, a database for storing and querying user and team data, storage and file management, image manipulation and cropping, schedule cron tasks and many other features to help you get more results in faster times and with a lot less code.
+Using MBATS, you can easily create Trading Strategies in Backtrader, manage machine learning models with Ml-Flow, a Posgress database for storing and querying Market data, storage and file management database based on Minio (S3 like), Superset to visualize performance of backtested and live strategies, schedule tasks using Apache Airflow and many other features to help you get more results in faster times and with a lot less code.
 
-[https://appwrite.io](https://appwrite.io)
+Note: MBATS is not meant to compete with any of the trading platforms, its meant for educational purpose and for that kid who's in a third world country who has a trading idea but no way to monetise it. 
 
-![Appwrite](public/images/github.png)
+[https://appwrite.io](https://appwrite.io) #linkedin article link here
+
+![MBATS](images/components.png)  idea
 
 Table of Contents:
 
-- [Installation](#installation)
-  - [Changing Port Number](#changing-port-number)
+- [Quickstart](#Quickstart)
 - [Getting Started](#getting-started)
-  - [Services](#services)
-  - [SDKs](#sdks)
-- [Security](#security)
-- [Follow Us](#follow-us)
+  - [Backtrader](#Backtrader)
+  - [Mlflow](#services)
+  - [Airflow](#sdks)
+  - [Superset](#sdks)
+  - [Minio](#sdks)
+  - [Postgres](#sdks)
+- [Cloud First](#security)
+- [Current Features](#follow-us)
+- [Planned Features](#follow-us)
 - [Contributing](#contributing)
 - [License](#license)
       
-## Installation
+## Quickstart
 
-Appwrite backend server is designed to run in a container environment. Running your server is as easy as running one command from your terminal. You can either run Appwrite on your localhost using docker-compose or on any other container orchestration tool like Kubernetes, Docker Swarm or Rancher.
+[![infrakit+linuxkit](./docs/images/infrakit_linuxkit_screencap.png)](https://www.youtube.com/watch?v=Qw9zlE3t8Ko "InfraKit + LinuxKit")
 
-The easiest way to start running your Appwrite server is by running our docker-compose file. Before running the installation command make sure you have [Docker](https://www.docker.com/products/docker-desktop) installed on your machine:
+MBATS is based on Docker containers. Running your Infrastructure is as easy as running one command from your terminal. You can either run MBATS on your local machine or on the cloud using docker-compose.
 
-```bash
-mkdir appwrite-ce && \
-cd appwrite-ce && \
-curl -o docker-compose.yml https://appwrite.io/docker-compose.yml?version=0.4.0&port=80 && \
-docker-compose up -d --remove-orphans
-```
+The easiest way to start running your MBATS is by running our docker-compose file. Before running the installation command make sure you have [Docker](https://www.docker.com/products/docker-desktop) installed on your machine:
 
+1. Downlod/Clone the Github Repository (Make sure your Docker Machine has access to the location):
+- ```git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY```
+2. Update the 'WD' variable in .env file to the location of the Cloned directory:
+- ```docker-compose up```
+3. Run the script to setup up the database schema 
+- ```.\starter_script.bat```
+4. Run the Docker containers:
+- ```docker-compose up -d --build```
+    First time would take some time to download all the required images. 
 
-Once the Docker installation completes, go to http://localhost to access the Appwrite console from your browser. Please notice that on non-linux native hosts, the server might take a few minutes to start after installation completes.
+Once the Docker installation completes, go you can access the following components from the webaddress
+Jupyter Notebook:http://localhost:8888/
+Airflow: http://localhost:8080
+Mlflow: http://localhost:5500
+PgAdmin: http://localhost:1234
+Superset: http://localhost:8088
+Minio: http://localhost:9000
 
+You can get started with the notebooks in the Jupyter Notebooks. Examples 
 
-For advanced production and custom installation, check out our Docker [environment variables](docs/tutorials/environment-variables.md) docs.
-
-### Changing Port Number
-
-In case your port 80 is already taken, change the port number in the command above. Make sure to set the correct endpoint in your selected SDK, including your new port number.
+Sample Strategy: qpack/q_strategy/sample_strategy_1
 
 ## Getting Started
 
+![MBATS Architecture](images/architecture.png)
+
 Getting started with Appwrite is as easy as creating a new project, choosing your platform and integrating its SDK in your code. You can easily get started with your platform of choice by reading one of our Getting Started tutorials.
 
-* [Getting Started for Web](https://appwrite.io/docs/getting-started-for-web)
-* [Getting Started for Server](https://appwrite.io/docs/getting-started-for-server)
-* Getting Started for Android (soon...)
-* Getting Started for iOS (soon...)
 
-### Services
+### Backtrader
 
-* [**Auth**](https://appwrite.io/docs/auth) - Manage user authentication using multiple sign-in methods and account recovery.
-* [**Account**](https://appwrite.io/docs/account) - Manage current user account. Track and manage the user sessions, devices, and security audit log.
-* [**Users**](https://appwrite.io/docs/users) - Manage and list all project users when in admin mode.
-* [**Teams**](https://appwrite.io/docs/teams) - Manage and group users in teams. Manage memberships, invites and user roles within a team.
-* [**Database**](https://appwrite.io/docs/database) - Manage database collections and documents. Read, create, update and delete documents and filter lists of documents collections using an advanced filter with graph-like capabilities.
-* [**Storage**](https://appwrite.io/docs/storage) - Manage storage files. Read, create, delete and preview files. Manipulate the preview of your files to fit your app perfectly. All files are scanned by ClamAV and stored in a secure and encrypted way.
-* [**Locale**](https://appwrite.io/docs/locale) - Track user's location, and manage your app locale-based data.
-* [**Avatars**](https://appwrite.io/docs/avatars) - Manage your users' avatars, countries' flags, browser icons, credit card symbols and generate QR codes.
+* [**Run**](https://appwrite.io/docs/auth) - Manage user authentication using multiple sign-in methods and account recovery.
+* [**Strategy**](https://appwrite.io/docs/account) - Manage current user account. Track and manage the user sessions, devices, and security audit log.
+* [**Logger Analyzer**](https://appwrite.io/docs/users) - Manage and list all project users when in admin mode.
+* [**Performance Analyzer**](https://appwrite.io/docs/teams) - Manage and group users in teams. Manage memberships, invites and user roles within a team.
+* [**Transaction Analyzer**](https://appwrite.io/docs/database) - Manage database collections and documents. Read, create, update and delete documents and filter lists of documents collections using an advanced filter with graph-like capabilities.
+* [**Stategy ID Analyzer**](https://appwrite.io/docs/storage) - Manage storage files. Read, create, delete and preview files. Manipulate the preview of your files to fit your 
 
-For the complete API documentation, visit [https://appwrite.io/docs](https://appwrite.io/docs). For more tutorials, news and announcements check out our [blog](https://medium.com/appwrite-io).
+Since this is a docker environment you can completely swap the Backtester framework and use something that you are familiar with like
+* [Zipline](https://github.com/quantopian/zipline)
+* [QuantConnect Lean](https://github.com/QuantConnect/Lean)
+* [QSTrader](https://github.com/mhallsmoore/qstrader)
 
-### SDKs
 
-Currently, we support only a few SDK libraries and are constantly working on including new ones.
+### MLFLOW
 
-Below is a list of currently supported platforms and languages. If you wish to help us add support to your platform of choice, you can go over to our [SDK Generator](https://github.com/appwrite/sdk-generator) project and view our [contribution guide](https://github.com/appwrite/sdk-generator/blob/master/CONTRIBUTING.md).
+MlflowWrite about why you choose MLFLOW
+    
+## Airflow
 
-* ✅ [JS](https://github.com/appwrite/sdk-for-js) (Maintained by the Appwrite Team)
-* ✅ [NodeJS](https://github.com/appwrite/sdk-for-node) (Maintained by the Appwrite Team)
-* ✅ [PHP](https://github.com/appwrite/sdk-for-php) (Maintained by the Appwrite Team)
-* ✅ [Ruby](https://github.com/appwrite/sdk-for-ruby) - **Work in progress** (Maintained by the Appwrite Team)
-* ✅ [Python](https://github.com/appwrite/sdk-for-python) - **Work in progress** (Maintained by the Appwrite Team)
-* ✳️ Looking for more SDKs? - Help us by contributing a pull request to our [SDK Generator](https://github.com/appwrite/sdk-generator)!
+.What jobs are being done in Airflow. 
 
-## Security
+## Superset
 
-For security issues, kindly email us [security@appwrite.io](mailto:security@appwrite.io) instead of posting a public issue in GitHub.
+## Minio
 
-## Follow Us
+## Posgres
 
-Join our growing community around the world! Follow us on [Twitter](https://twitter.com/appwrite_io), [Facebook Page](https://www.facebook.com/appwrite.io), [Facebook Group](https://www.facebook.com/groups/appwrite.developers/) or join our live [Discord server](https://discord.gg/GSeTUeA) for more help, ideas, and discussions.
+## Scalling to the Cloud
+![MBATS Cloud Architecture](images/architecture-cloud.png)
+
+## Current Features
+* Backtesting and Live trading Forex using Oanda
+* Multiple strategy support.
+* Machine Learning model development and deployment using MLflow.
+* BI Dashboard for real-time monitoring of Live trading and backtesting performance results.
+* Easily extensible to support any kind of structured data.
+* Infrastructure as Code – less than 5 minutes from scratch to a fully functional trading infrastructure.
+
+
+## Planned Features
+
+* Support for Equity Database (Backtrader supports [Interactive Brokers out of the box](https://www.backtrader.com/docu/live/ib/ib/]))
+* Celery/Kubernetes cluster support for Airflow
+* More performance and trade analytics dashboards on Superset 
+* Dynamic DAG for model retraining. 
 
 ## Contributing
 
-All code contributions - including those of people having commit access - must go through a pull request and approved by a core developer before being merged. This is to ensure proper review of all the code.
-
-We truly ❤️ pull requests! If you wish to help, you can learn more about how you can contribute to this project in the [contribution guide](CONTRIBUTING.md).
+All code contributions must go through a pull request and approved by a core developer before being merged. This is to ensure proper review of all the code.
 
 ## License
 
