@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://appwrite.io" target="_blank"><img width="260" height="39" src="images/logo.png" alt="Appwrite Logo"></a>
+    <a href="https://appwrite.io" target="_blank"><img width="260" height="39" src="./images/logo.png" alt="Appwrite Logo"></a>
     <br />
     <br />
     <b>Microservices Based Algorthmic Trading System</b>
@@ -21,7 +21,7 @@ Note: MBATS is not meant to compete with any of the trading platforms, its meant
 
 [https://appwrite.io](https://appwrite.io) #linkedin article link here
 
-![MBATS](images/components.png)  idea
+![MBATS](./images/components.png)  idea
 
 Table of Contents:
 
@@ -75,7 +75,7 @@ Sample Strategy: qpack/q_strategy/sample_strategy_1
 
 MBATS is a collection of 9 docker containers acting synchronously to create an environment to develop and productinise trading strategies with ease. The main parts of the MBATS are as follows.
 
-### Backtrader
+### [Backtrader](https://www.backtrader.com/)
 [Backtrader](https://www.backtrader.com/) is an python based opensource event-driven trading strategy backtester with support for live trading. The reason why I choose Backtrader over other opensource backtesters like * [Zipline](https://github.com/quantopian/zipline) and * [QuantConnect Lean](https://github.com/QuantConnect/Lean) is because of the great the great documentation and its community driven. 
 Here's a list of subclasses I have written for this project that are derived classed from Backtrader package. 
 * [**Run**](https://appwrite.io/docs/auth) - Script that combines the strategy, analyzers and the datafeeds. 
@@ -84,12 +84,17 @@ Here's a list of subclasses I have written for this project that are derived cla
 * [**Performance Analyzer**](https://appwrite.io/docs/teams) - Measures difference performance metrics of round trip trades and save it in the database which can be later consumed in BI tool (Superset).
 * [**Transaction Analyzer**](https://appwrite.io/docs/database) - Records the executed orders into the database. 
 * [**Stategy ID Analyzer**](https://appwrite.io/docs/storage) - Keep a record of the metadata of the backtest or live strategy ran.
+* [**Oanda Broker**](https://github.com/ftomassetti/backtrader-oandav20)
+* [**Postgress Data Feed**](point to the feed)
+
+<p align="center">
+  <img width="700" height="500" src="images/backtrader.png">
+</p>
 
 
+### [MLflow](https://mlflow.org/)
 
-### MLFLOW
-
-Anyone who has worked in the Datascience field would have heard about [Spark](https://spark.apache.org/), well they have brought about a similar disruptive tool to revolutinize the Machine Learning model development and deployement space and that is [MLflow](https://mlflow.org/). Mlflow is an open source platform to manage the ML lifecycle, including experimentation, reproducibility and deployment. It currently offers four components:
+Anyone who has worked in the Datascience field would have heard about [Spark](https://spark.apache.org/), well they have brought about a similar disruptive tool to revolutinize the Machine Learning model development and deployement space and that is [MLflow]. Mlflow is an open source platform to manage the ML lifecycle, including experimentation, reproducibility and deployment. It currently offers four components:
 * MLflow Tracking
 * MLflow Projects
 * MLflow Models
@@ -99,24 +104,24 @@ There are a few other organizations that try to address this problem but what se
 
 In this project all the ML model can be tracked by the MLflow Tracker and the model artifacts are stored in Minio, the main reason for doing so is that later on I can swap Minio for a Cloud object store like S3. The ML models are served using MLflow pyfunc. We also have the option to serve the model as Rest API using MLFlow (code in sample jupyter notebook)
     
-## Airflow
+## [Airflow](https://airflow.apache.org/)
 Apache Airflow is an open-source workflow management platform, basically Chron on steroids and it has wide array of integration with popular platforms and data stores. 
 In this this project we use airflow for scheduling two tasks mainly. One [DAG]() for downloading daily and minute data into the Database controlled by an excel file and another [Dynamic DAG]() for schedulling live strategies controlled by a csv file. 
 
-## Apache Superset
+## [Apache Superset](https://superset.apache.org/)
 From the creators of Apache Airflow, Apache Superset is a Data Visualization tool initially designed by Airbnb and later open sourced for the community.
 Superset is an interactive Data Exploration toll that will let you slice, dice and visualize data. Why pay for Tableau and PowerBi when you can use something that opensource. We use Superset to visualize Backtesting and Live trading performance.  
 
-## Minio
+## [Minio](https://min.io/)
 MinIO is pioneering high performance object storage. With READ/WRITE speeds of 55 GB/s and 35 GB/s on standard hardware, object storage can operate as the primary storage tier for a diverse set of workloads. Amazon’s S3 API is the defacto standard in the object storage world and represents the most modern storage API in the market. MinIO adopted S3 compatibiity early on and was the first to extend it to support S3 Select. Because of this S3 Compatibility by using Minio we have an upperhand of moving towards the Cloud on a later stage when it comes time for scaling and move into the cloud. 
 
-## Posgres
+## [PostgreSQL](https://www.postgresql.org/)
 We have 2 Databases in our PosgresSQL server, 1 is the Security Master database that stores the Daily and Minute data for Forex Symbols in 2 seperate tables. 
 Another Database is used for storing the position information and the performance metrics. 
 
 ## Scalling to the Cloud
 MLFlow has been developed by the Databricks team and therefore its native in their environment, but also the popularity and adoption of this tool has also ensured it a place in AWS Sage Maker and Azure. Every technology used in this project has a synonymus managed service offered in the cloud.
-And the best part of scalling such an microsservices based architecture is that you can do it step by step rather than do it as a whole. Moreover if the cloud is using the same technology then the migration can happen with minimal changes. A simple example for this woudl be GCP Cloud Composer which is built on top of Apache Airflow and Kubernettes which means that all the DAG's that we are using in this project can be used in cloud composer as well. Similarly I have found GCP has a better strategy and technology in place for building a hybrid cloud based infrastrucure and for that reason here's architecture if this project has to be transfered into the GCP platform. 
+And the best part of scalling such an microsservices based architecture is that you can do it step by step rather than do it as a whole. Moreover if the cloud is using the same technology then the migration can happen with minimal changes. A simple example for this would be GCP Cloud Composer which is built on top of Apache Airflow and Kubernettes which means that all the DAG's that we are using in this project can be used in cloud composer as well. Similarly I have found GCP has a better strategy and technology in place for building a hybrid cloud based infrastrucure and for that reason here's architecture if this project has to be transfered into the GCP platform. 
 ![MBATS Cloud Architecture](images/architecture-cloud.png)
 
 ## Current Features
