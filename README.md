@@ -21,7 +21,7 @@ Note: MBATS is not meant to compete with any of the trading platforms, its meant
 
 [https://appwrite.io](https://appwrite.io) #linkedin article link here
 
-![MBATS](./images/components.png)  idea
+![MBATS](public/images/components.png)  idea
 
 Table of Contents:
 
@@ -41,7 +41,7 @@ Table of Contents:
       
 ## Quickstart
 
-[![infrakit+linuxkit](./images/architecture.png)](https://www.youtube.com/watch?v=Qw9zlE3t8Ko "InfraKit + LinuxKit")
+[![infrakit+linuxkit](public/images/architecture.png)](https://www.youtube.com/watch?v=Qw9zlE3t8Ko "InfraKit + LinuxKit")
 
 MBATS is based on Docker containers. Running your Infrastructure is as easy as running one command from your terminal. You can either run MBATS on your local machine or on the cloud using docker-compose.
 
@@ -71,7 +71,7 @@ Sample Strategy: qpack/q_strategy/sample_strategy_1
 
 ## Getting Started
 
-![MBATS Architecture](images/architecture.png)
+![MBATS Architecture](public/images/architecture.png)
 
 MBATS is a collection of 9 docker containers acting synchronously to create an environment to develop and productinise trading strategies with ease. The main parts of the MBATS are as follows.
 
@@ -87,9 +87,7 @@ Here's a list of subclasses I have written for this project that are derived cla
 * [**Oanda Broker**](https://github.com/ftomassetti/backtrader-oandav20)
 * [**Postgress Data Feed**](point to the feed)
 
-<p align="center">
-  <img width="700" height="500" src="images/backtrader.png">
-</p>
+<p align="center"><img src="public/images/backtrader.png" width="700" height="500"/></p>
 
 
 ### [MLflow](https://mlflow.org/)
@@ -122,7 +120,7 @@ Another Database is used for storing the position information and the performanc
 ## Scalling to the Cloud
 MLFlow has been developed by the Databricks team and therefore its native in their environment, but also the popularity and adoption of this tool has also ensured it a place in AWS Sage Maker and Azure. Every technology used in this project has a synonymus managed service offered in the cloud.
 And the best part of scalling such an microsservices based architecture is that you can do it step by step rather than do it as a whole. Moreover if the cloud is using the same technology then the migration can happen with minimal changes. A simple example for this would be GCP Cloud Composer which is built on top of Apache Airflow and Kubernettes which means that all the DAG's that we are using in this project can be used in cloud composer as well. Similarly I have found GCP has a better strategy and technology in place for building a hybrid cloud based infrastrucure and for that reason here's architecture if this project has to be transfered into the GCP platform. 
-![MBATS Cloud Architecture](images/architecture-cloud.png)
+![MBATS Cloud Architecture](public/images/architecture-cloud.png)
 
 ## Current Features
 * Backtesting and Live trading Forex using Oanda
