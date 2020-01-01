@@ -1,5 +1,5 @@
 <p align="center">
-    <a href="https://appwrite.io" target="_blank"><img width="260" height="39" src="public/images/logo.png" alt="Appwrite Logo"></a>
+    <a href="https://appwrite.io" target="_blank"><img width="260" height="39" src="public/images/logo.PNG" alt="Appwrite Logo"></a>
     <br />
     <br />
     <b>Microservices Based Algorthmic Trading System</b>
