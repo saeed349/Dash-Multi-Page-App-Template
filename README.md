@@ -109,12 +109,24 @@ In this this project we use airflow for scheduling two tasks mainly. One [DAG]()
 From the creators of Apache Airflow, Apache Superset is a Data Visualization tool initially designed by Airbnb and later open sourced for the community.
 Superset is an interactive Data Exploration toll that will let you slice, dice and visualize data. Why pay for Tableau and PowerBi when you can use something that opensource. We use Superset to visualize Backtesting and Live trading performance.  
 
+Username:guest  
+Password:guest 
+
+The dashboards and user details are stored in Storage/superset/superset.db   
+If you want to reset the crednetials and create new dashboard, just delete this sqlite DB and create a new one with  
+```touch superset.db```  
+Then once the container is up and running execute  
+```docker exec -it superset superset-init```
+
 ## [Minio](https://min.io/)
 MinIO is pioneering high performance object storage. With READ/WRITE speeds of 55 GB/s and 35 GB/s on standard hardware, object storage can operate as the primary storage tier for a diverse set of workloads. Amazon’s S3 API is the defacto standard in the object storage world and represents the most modern storage API in the market. MinIO adopted S3 compatibiity early on and was the first to extend it to support S3 Select. Because of this S3 Compatibility by using Minio we have an upperhand of moving towards the Cloud on a later stage when it comes time for scaling and move into the cloud. 
 
 ## [PostgreSQL](https://www.postgresql.org/)
 We have 2 Databases in our PosgresSQL server, 1 is the Security Master database that stores the Daily and Minute data for Forex Symbols in 2 seperate tables. 
 Another Database is used for storing the position information and the performance metrics. 
+The Databases can be managed through PgAdmin  
+Username:guest  
+Pass:guest
 
 ## Scalling to the Cloud
 MLFlow has been developed by the Databricks team and therefore its native in their environment, but also the popularity and adoption of this tool has also ensured it a place in AWS Sage Maker and Azure. Every technology used in this project has a synonymus managed service offered in the cloud.

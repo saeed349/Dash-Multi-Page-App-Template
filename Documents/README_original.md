@@ -27,10 +27,13 @@ docker-compose up -d --build
 
 docker-machine ssh
 cd persistant_volume/superset
-touch superset.db
+touch superset.db  (only works in bash, so I open a bash terminal and created one)
 exit
 docker-compose up -d # or docker-compose up -d superset
 docker exec -it superset superset-init #this will go into the initial script later on, u will also have to "touch superset.db" if "superset.db" doenst exits, dont know how to do that yet".
+Superset connectiones
+postgres://postgres:posgres349X@postgres_secmaster/securities_master
+postgres://postgres:posgres349@postgres_secmaster/risk_db
 # enter all credentials. ("saeed349" for everything)
 
 
