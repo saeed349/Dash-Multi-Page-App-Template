@@ -86,8 +86,8 @@ services:
         image: dpage/pgadmin4
         container_name: "pgadmin"
         environment:
-            PGADMIN_DEFAULT_EMAIL: "saeed349@gmail.com"
-            PGADMIN_DEFAULT_PASSWORD: "pgadmin"
+            PGADMIN_DEFAULT_EMAIL: "guest"
+            PGADMIN_DEFAULT_PASSWORD: "guest"
         volumes:
             - ${WD}/pgadmin/:/var/lib/pgadmin 
         ports:
