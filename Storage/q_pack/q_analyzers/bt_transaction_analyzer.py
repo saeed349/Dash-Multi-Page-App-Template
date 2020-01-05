@@ -13,6 +13,7 @@ from backtrader import Order, Position
 import psycopg2
 import q_credentials.db_risk_cred as db_risk_cred
 import datetime
+import q_tools.write_to_db as write_to_db
 
 class transactions_analyzer(bt.Analyzer):
     '''This analyzer reports the transactions occurred with each an every data in
@@ -91,16 +92,7 @@ class transactions_analyzer(bt.Analyzer):
                     # instead of datetime.now u can use self.strategy.current_time
                     analyzer_result={'run_id':self.strategy.db_run_id,'recorded_time':datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'strategy':self.strategy.alias,
                     'transaction_date':self.strategy.datetime.datetime(),'size':size, 'price':price, 'sid':i, 'ticker':dname, 'value':(-size * price)}
-                    cols=analyzer_result.keys()
-                    cols_val_list=['%('+i+')s' for i in cols]
-                    cols_val=", ".join(cols_val_list)
-                    cols=", ".join(cols)
-
-                    cur = self.conn.cursor()
-                    sql="""INSERT INTO positions ("""+cols+""") VALUES ("""+cols_val+""")"""
-                    cur.executemany(sql,[analyzer_result]) # this can also support list of dicts
-                    self.conn.commit()
-
+                    write_to_db.write_to_db(conn=self.conn, data_dict=analyzer_result, table='positions') 
                     self.trades.append(analyzer_result)
         # if entries:
         #     self.rets[self.strategy.datetime.datetime()] = entries

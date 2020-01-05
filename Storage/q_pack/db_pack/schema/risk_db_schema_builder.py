@@ -76,7 +76,7 @@ def create_risk_tables(db_credential_info):
                         )
                     """,
                     """
-                    CREATE TABLE performance (
+                    CREATE TABLE position_performance (
                         id SERIAL PRIMARY KEY,
                         run_id INTEGER NOT NULL,
                         recorded_time TIMESTAMP NOT NULL,
@@ -98,6 +98,28 @@ def create_risk_tables(db_credential_info):
                         pnl_per_bar NUMERIC NULL,
                         mfe_percentage  NUMERIC NULL,
                         mae_percentage NUMERIC NULL,
+                        FOREIGN KEY (run_id) REFERENCES run_information(run_id)
+                        )
+                    """,
+                                       """
+                    CREATE TABLE strategy_performance (
+                        id SERIAL PRIMARY KEY,
+                        run_id INTEGER NOT NULL,
+                        total_open NUMERIC NULL,
+                        total_closed NUMERIC NULL,
+                        total_won NUMERIC NULL,
+                        total_lost NUMERIC NULL,
+                        win_streak NUMERIC NULL,
+                        lose_streak NUMERIC NULL,
+                        pnl_net NUMERIC NULL,
+                        strike_rate NUMERIC NULL,
+                        sqn NUMERIC NULL,
+                        total_compound_return NUMERIC NULL,
+                        avg_return NUMERIC NULL,
+                        annual_norm_return NUMERIC NULL,
+                        max_draw_per NUMERIC NULL,
+                        max_draw_val NUMERIC NULL,
+                        max_draw_len NUMERIC NULL,
                         FOREIGN KEY (run_id) REFERENCES run_information(run_id)
                         )
                     """,

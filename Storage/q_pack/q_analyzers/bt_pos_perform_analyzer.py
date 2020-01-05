@@ -6,8 +6,9 @@ import datetime
 
 import psycopg2
 import q_credentials.db_risk_cred as db_risk_cred
+import q_tools.write_to_db as write_to_db
 
-class trade_list(bt.Analyzer):
+class pos_performance_analyzer(bt.Analyzer):
 
     def get_analysis(self):
 
@@ -68,15 +69,5 @@ class trade_list(bt.Analyzer):
                  'nbars': barlen, 'pnl_per_bar': round(pbar, 2),
                  'mfe_percentage': round(mfe, 2), 'mae_percentage': round(mae, 2)}
 
-            cols=analyzer_result.keys()
-            cols_val_list=['%('+i+')s' for i in cols]
-            cols_val=", ".join(cols_val_list)
-            cols=", ".join(cols)
-
-            cur = self.conn.cursor()
-            sql="""INSERT INTO performance ("""+cols+""") VALUES ("""+cols_val+""")"""
-            cur.executemany(sql,[analyzer_result]) # this can also support list of dicts
-            self.conn.commit()
-
-
+            write_to_db.write_to_db(conn=self.conn, data_dict=analyzer_result, table='position_performance')  
             self.trades.append(analyzer_result)
