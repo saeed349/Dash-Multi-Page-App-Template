@@ -16,10 +16,11 @@ import os
 class St(bt.Strategy):
     alias = 'Simple Strategy'
     params = dict(
-        period=10,
-        backtest=True,
-        ml_log=False
-    )
+            period=10,
+            limdays=200,
+            backtest=True,
+            ml_serving=False,
+        )
 
 
     def log(self, arg):
@@ -94,7 +95,6 @@ class St(bt.Strategy):
         for i, d in enumerate(self.datas):
             dt, dn = self.datetime.datetime(), d._name
             pos = self.getposition(d).size
-            # self.save_down(d=d,dn=dn,pos=i)
             if self.datastatus:
                 if d.close[0] > self.sma[i] and pos<=0:
                     self.order=self.close(data=d)
@@ -105,3 +105,6 @@ class St(bt.Strategy):
                     self.order=self.close(data=d)
                     self.order=self.sell(data=d)
                     self.log('SELL CREATE {:.2f} at {}'.format(d.close[0],dn))
+
+    def stop(self):
+        print("Strategy run finished with Run ID:",self.db_run_id)

@@ -32,41 +32,33 @@ if __name__ == "__main__":
     # Read the wine-quality csv file (make sure you're running this from the root of MLflow!)
     log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ml_log_processed.csv")
     data = pd.read_csv(log_path)
-
+        
+    mlflow.tracking.set_tracking_uri('http://mlflow-image:5500')
     # Split the data into training and test sets. (0.75, 0.25) split.
     train, test = train_test_split(data)
 
-    # The predicted column is "quality" which is a scalar from [3, 9]
+    # The predicted column is "fwd_returns"
     train_x = train.drop(["fwd_returns"], axis=1)
     test_x = test.drop(["fwd_returns"], axis=1)
     train_y = train[["fwd_returns"]]
     test_y = test[["fwd_returns"]]
 
-    alpha = float(sys.argv[1]) if len(sys.argv) > 1 else 0.5
-    l1_ratio = float(sys.argv[2]) if len(sys.argv) > 2 else 0.5
-    
-    
-    mlflow.tracking.set_tracking_uri('http://mlflow-image:5500')
-    # mlflow.tracking.set_tracking_uri('http://localhost:5000')
-    mlflow.set_experiment('mlflow-minio-test_9') # comment it when packaging
-    
-    with mlflow.start_run():
-        lr = ElasticNet(alpha=alpha, l1_ratio=l1_ratio, random_state=42)
-        lr.fit(train_x, train_y)
+    n_estimators=float(sys.argv[1]) if len(sys.argv) > 1 else 200
+    max_depth=float(sys.argv[2]) if len(sys.argv) > 2 else 10
 
-        predicted_qualities = lr.predict(test_x)
+    lr = RandomForestRegressor(n_estimators=n_estimators,max_depth=max_depth)
+    lr.fit(train_x, train_y)
+    predicted_qualities = lr.predict(test_x)
+    (rmse, mae, r2) = eval_metrics(test_y, predicted_qualities)
 
-        (rmse, mae, r2) = eval_metrics(test_y, predicted_qualities)
+    print("RandomForest Model (n_estimators=%f, max_depth=%f):" % (n_estimators, max_depth))
+    print("  RMSE: %s" % rmse)
+    print("  MAE: %s" % mae)
+    print("  R2: %s" % r2)
 
-        print("Elasticnet model (alpha=%f, l1_ratio=%f):" % (alpha, l1_ratio))
-        print("  RMSE: %s" % rmse)
-        print("  MAE: %s" % mae)
-        print("  R2: %s" % r2)
-
-        mlflow.log_param("alpha", alpha)
-        mlflow.log_param("l1_ratio", l1_ratio)
-        mlflow.log_metric("rmse", rmse)
-        mlflow.log_metric("r2", r2)
-        mlflow.log_metric("mae", mae)
-
-        mlflow.sklearn.log_model(lr, "model")
+    mlflow.log_param("n_estimators", n_estimators)
+    mlflow.log_param("max_depth", max_depth)
+    mlflow.log_metric("rmse", rmse)
+    mlflow.log_metric("r2", r2)
+    mlflow.log_metric("mae", mae)
+    mlflow.sklearn.log_model(lr, "model")

@@ -53,7 +53,6 @@ class St(bt.Strategy):
     def notify_data(self, data, status, *args, **kwargs):
         print('*' * 5, 'DATA NOTIF:', data._getstatusname(status), *args)
         if status == data.LIVE:
-            # self.counttostop = self.p.stopafter
             self.datastatus = 1
 
     
@@ -65,7 +64,6 @@ class St(bt.Strategy):
 
     def notify_trade(self, trade):
         if not trade.isclosed:
-            # print(trade)
             return
 
         self.log('OPERATION PROFIT, GROSS %.5f, NET %.2f' %
@@ -103,3 +101,6 @@ class St(bt.Strategy):
                     price_tp = d.close[0]-(self.atr[0] * 2)
                     self.order=self.sell_bracket(data=d,exectype=bt.Order.Market, stopprice=price_sl, limitprice=price_tp, valid=order_valid)
                     self.log('SELL CREATE {:.2f} at {}'.format(d.close[0],dn))
+
+    def stop(self):
+        print("Strategy run finished with Run ID:",self.db_run_id)

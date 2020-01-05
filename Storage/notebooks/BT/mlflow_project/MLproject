@@ -5,6 +5,6 @@ conda_env: conda.yaml
 entry_points:
   main:
     parameters:
-      alpha: float
-      l1_ratio: {type: float, default: 0.1}
-    command: "python train.py {alpha} {l1_ratio}"
+      n_estimators: {type: int, default: 100}
+      max_depth: {type: int, default: 10}
+    command: "python train.py {n_estimators} {max_depth}"
