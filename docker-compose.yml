@@ -72,6 +72,7 @@ services:
         
     postgres_secmaster:
         image: postgres
+        restart: always
         container_name: "my_postgres"
         ports:
             - 5431:5431                

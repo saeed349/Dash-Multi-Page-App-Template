@@ -1,5 +1,4 @@
-echo "Testing scripts on jupyter notebook"
-REM docker ps -a
+echo "scripts on jupyter notebook"
 docker exec -it jupyter-image /bin/sh -c "python /home/jovyan/work/q_pack/db_pack/schema/secmaster_db_schema_builder.py"
 docker exec -it jupyter-image /bin/sh -c "python /home/jovyan/work/q_pack/db_pack/schema/secmaster_db_symbol_loader.py"
 docker exec -it jupyter-image /bin/sh -c "python /home/jovyan/work/q_pack/db_pack/schema/risk_db_schema_builder.py"

@@ -169,7 +169,7 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='M1',client
 
 def main():
 
-    initial_start_date = datetime.datetime(2019,5,30)
+    initial_start_date = datetime.datetime(2019,12,30)
     
     db_host=db_secmaster_cred.dbHost 
     db_user=db_secmaster_cred.dbUser
