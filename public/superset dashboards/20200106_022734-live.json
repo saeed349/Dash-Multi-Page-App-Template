@@ -1,0 +1,628 @@
+{
+    "dashboards": [
+        {
+            "__Dashboard__": {
+                "css": "",
+                "dashboard_title": "Live",
+                "description": null,
+                "json_metadata": "{\"filter_immune_slices\": [], \"timed_refresh_immune_slices\": [], \"filter_immune_slice_fields\": {}, \"expanded_slices\": {}, \"refresh_frequency\": 0, \"default_filters\": \"{}\", \"remote_id\": 2}",
+                "position_json": "{\"CHART-D9TW1__ZcP\":{\"children\":[],\"id\":\"CHART-D9TW1__ZcP\",\"meta\":{\"chartId\":2,\"height\":50,\"sliceName\":\"Select the Run ID\",\"width\":4},\"parents\":[\"ROOT_ID\",\"GRID_ID\",\"ROW-LvcNthsi9\"],\"type\":\"CHART\"},\"CHART-tx8V_pHUdJ\":{\"children\":[],\"id\":\"CHART-tx8V_pHUdJ\",\"meta\":{\"chartId\":11,\"height\":51,\"sliceName\":\"Transactions\",\"width\":8},\"parents\":[\"ROOT_ID\",\"GRID_ID\",\"ROW-LvcNthsi9\"],\"type\":\"CHART\"},\"DASHBOARD_VERSION_KEY\":\"v2\",\"GRID_ID\":{\"children\":[\"ROW-LvcNthsi9\"],\"id\":\"GRID_ID\",\"parents\":[\"ROOT_ID\"],\"type\":\"GRID\"},\"HEADER_ID\":{\"id\":\"HEADER_ID\",\"meta\":{\"text\":\"Live\"},\"type\":\"HEADER\"},\"ROOT_ID\":{\"children\":[\"GRID_ID\"],\"id\":\"ROOT_ID\",\"type\":\"ROOT\"},\"ROW-LvcNthsi9\":{\"children\":[\"CHART-D9TW1__ZcP\",\"CHART-tx8V_pHUdJ\"],\"id\":\"ROW-LvcNthsi9\",\"meta\":{\"0\":\"ROOT_ID\",\"background\":\"BACKGROUND_TRANSPARENT\"},\"parents\":[\"ROOT_ID\",\"GRID_ID\"],\"type\":\"ROW\"}}",
+                "slices": [
+                    {
+                        "__Slice__": {
+                            "cache_timeout": null,
+                            "datasource_name": "public.run_information",
+                            "datasource_type": "table",
+                            "id": 2,
+                            "params": "{\"adhoc_filters\": [], \"datasource\": \"4__table\", \"date_filter\": true, \"filter_configs\": [{\"asc\": false, \"clearable\": true, \"column\": \"run_id\", \"defaultValue\": \"\", \"key\": \"_DnnZPgba\", \"label\": \"Run ID\", \"multiple\": false}], \"granularity_sqla\": \"recorded_time\", \"instant_filtering\": true, \"show_druid_time_granularity\": false, \"show_druid_time_origin\": false, \"show_sqla_time_column\": false, \"show_sqla_time_granularity\": false, \"slice_id\": 2, \"time_grain_sqla\": null, \"time_range\": \"No filter\", \"url_params\": {}, \"viz_type\": \"filter_box\", \"remote_id\": 2, \"datasource_name\": \"run_information\", \"schema\": \"public\", \"database_name\": \"risk_db\"}",
+                            "slice_name": "Select the Run ID",
+                            "viz_type": "filter_box"
+                        }
+                    },
+                    {
+                        "__Slice__": {
+                            "cache_timeout": null,
+                            "datasource_name": "public.positions",
+                            "datasource_type": "table",
+                            "id": 11,
+                            "params": "{\"adhoc_filters\": [], \"align_pn\": false, \"all_columns\": [], \"color_pn\": true, \"datasource\": \"2__table\", \"granularity_sqla\": \"transaction_date\", \"groupby\": [\"run_id\", \"ticker\", \"transaction_date\"], \"include_search\": false, \"include_time\": false, \"metrics\": [{\"aggregate\": \"MAX\", \"column\": {\"column_name\": \"size\", \"description\": null, \"expression\": null, \"filterable\": true, \"groupby\": true, \"id\": 23, \"is_dttm\": false, \"optionName\": \"_col_size\", \"python_date_format\": null, \"type\": \"NUMERIC\", \"verbose_name\": null}, \"expressionType\": \"SIMPLE\", \"fromFormData\": true, \"hasCustomLabel\": true, \"label\": \"Position Size\", \"optionName\": \"metric_kq40ute8h6_srev5fgikx8\", \"sqlExpression\": null}, {\"aggregate\": \"MAX\", \"column\": {\"column_name\": \"price\", \"description\": null, \"expression\": null, \"filterable\": true, \"groupby\": true, \"id\": 24, \"is_dttm\": false, \"optionName\": \"_col_price\", \"python_date_format\": null, \"type\": \"NUMERIC\", \"verbose_name\": null}, \"expressionType\": \"SIMPLE\", \"fromFormData\": true, \"hasCustomLabel\": true, \"label\": \"Position Price\", \"optionName\": \"metric_40y44k3qk1z_dln39dwo5o8\", \"sqlExpression\": null}, {\"aggregate\": \"MAX\", \"column\": {\"column_name\": \"value\", \"description\": null, \"expression\": null, \"filterable\": true, \"groupby\": true, \"id\": 27, \"is_dttm\": false, \"optionName\": \"_col_value\", \"python_date_format\": null, \"type\": \"NUMERIC\", \"verbose_name\": null}, \"expressionType\": \"SIMPLE\", \"fromFormData\": true, \"hasCustomLabel\": true, \"label\": \"Position Value\", \"optionName\": \"metric_yozj2rgrx6n_jd57xeyf62r\", \"sqlExpression\": null}], \"order_by_cols\": [], \"order_desc\": true, \"page_length\": 0, \"percent_metrics\": [], \"row_limit\": 10000, \"slice_id\": 11, \"table_filter\": false, \"table_timestamp_format\": \"%Y-%m-%d %H:%M:%S\", \"time_grain_sqla\": null, \"time_range\": \"No filter\", \"timeseries_limit_metric\": {\"aggregate\": \"MAX\", \"column\": {\"column_name\": \"transaction_date\", \"description\": null, \"expression\": null, \"filterable\": true, \"groupby\": true, \"id\": 22, \"is_dttm\": true, \"optionName\": \"_col_transaction_date\", \"python_date_format\": null, \"type\": \"TIMESTAMP WITHOUT TIME ZONE\", \"verbose_name\": null}, \"expressionType\": \"SIMPLE\", \"fromFormData\": true, \"hasCustomLabel\": false, \"label\": \"MAX(transaction_date)\", \"optionName\": \"metric_wb5zu1fgrr_1d89wihy8jb\", \"sqlExpression\": null}, \"url_params\": {}, \"viz_type\": \"table\", \"remote_id\": 11, \"datasource_name\": \"positions\", \"schema\": \"public\", \"database_name\": \"risk_db\"}",
+                            "slice_name": "Transactions",
+                            "viz_type": "table"
+                        }
+                    }
+                ],
+                "slug": null
+            }
+        }
+    ],
+    "datasources": [
+        {
+            "__SqlaTable__": {
+                "cache_timeout": null,
+                "columns": [
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "id",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 18,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "INTEGER",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "run_id",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 19,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "INTEGER",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "recorded_time",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 20,
+                            "is_active": true,
+                            "is_dttm": true,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "TIMESTAMP WITHOUT TIME ZONE",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "strategy",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 21,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "TEXT",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "transaction_date",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 22,
+                            "is_active": true,
+                            "is_dttm": true,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "TIMESTAMP WITHOUT TIME ZONE",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "size",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 23,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "NUMERIC",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "price",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 24,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "NUMERIC",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "sid",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 25,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "INTEGER",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "ticker",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 26,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "TEXT",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "column_name": "value",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 27,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 2,
+                            "type": "NUMERIC",
+                            "verbose_name": null
+                        }
+                    }
+                ],
+                "database_id": 3,
+                "default_endpoint": null,
+                "description": null,
+                "fetch_values_predicate": null,
+                "filter_select_enabled": false,
+                "main_dttm_col": "recorded_time",
+                "metrics": [
+                    {
+                        "__SqlMetric__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:11:06"
+                            },
+                            "d3format": null,
+                            "description": null,
+                            "expression": "COUNT(*)",
+                            "id": 2,
+                            "metric_name": "count",
+                            "metric_type": "count",
+                            "table_id": 2,
+                            "verbose_name": "COUNT(*)",
+                            "warning_text": null
+                        }
+                    }
+                ],
+                "offset": 0,
+                "params": "{\"remote_id\": 2, \"database_name\": \"risk_db\"}",
+                "schema": "public",
+                "sql": null,
+                "table_name": "positions",
+                "template_params": null
+            }
+        },
+        {
+            "__SqlaTable__": {
+                "cache_timeout": null,
+                "columns": [
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "run_id",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 49,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "INTEGER",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "run_type",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 50,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TEXT",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "recorded_time",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 51,
+                            "is_active": true,
+                            "is_dttm": true,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TIMESTAMP WITHOUT TIME ZONE",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "start_time",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 52,
+                            "is_active": true,
+                            "is_dttm": true,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TIMESTAMP WITHOUT TIME ZONE",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "end_time",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 53,
+                            "is_active": true,
+                            "is_dttm": true,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TIMESTAMP WITHOUT TIME ZONE",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "strategy",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 54,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TEXT",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "tickers",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 55,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TEXT",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "indicators",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 56,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TEXT",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "frequency",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 57,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TEXT",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "account",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 58,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TEXT",
+                            "verbose_name": null
+                        }
+                    },
+                    {
+                        "__TableColumn__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "column_name": "log_file",
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "description": null,
+                            "expression": null,
+                            "filterable": true,
+                            "groupby": true,
+                            "id": 59,
+                            "is_active": true,
+                            "is_dttm": false,
+                            "python_date_format": null,
+                            "table_id": 4,
+                            "type": "TEXT",
+                            "verbose_name": null
+                        }
+                    }
+                ],
+                "database_id": 3,
+                "default_endpoint": null,
+                "description": null,
+                "fetch_values_predicate": null,
+                "filter_select_enabled": false,
+                "main_dttm_col": "recorded_time",
+                "metrics": [
+                    {
+                        "__SqlMetric__": {
+                            "changed_by_fk": 1,
+                            "changed_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "created_by_fk": 1,
+                            "created_on": {
+                                "__datetime__": "2020-01-05T17:13:01"
+                            },
+                            "d3format": null,
+                            "description": null,
+                            "expression": "COUNT(*)",
+                            "id": 4,
+                            "metric_name": "count",
+                            "metric_type": "count",
+                            "table_id": 4,
+                            "verbose_name": "COUNT(*)",
+                            "warning_text": null
+                        }
+                    }
+                ],
+                "offset": 0,
+                "params": "{\"remote_id\": 4, \"database_name\": \"risk_db\"}",
+                "schema": "public",
+                "sql": null,
+                "table_name": "run_information",
+                "template_params": null
+            }
+        }
+    ]
+}
