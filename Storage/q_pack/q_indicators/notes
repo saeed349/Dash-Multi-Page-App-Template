@@ -1,0 +1,24 @@
+Level Indicator
+1) First we add all the fractals to a S/R list
+2) New S and R are calculated based on old S/R being broken
+3) Merge levels is still not clear yet
+4) All R and S is total of R/S plus new R/still
+5) Then we check if the price is in the range of S/R range
+6) Then we check for new S/R being broken.
+
+
+
+If we have to run it everyday, then the best approach would be to keep a running copy of S/R and new S/range
+Eventually I want to be running this as a batch process and when a new data comes, it should only check the new data instead of running through all of them. 
+
+Problems
+1) I see both data_1 and data_0, this is a big proble. I dont know what I had in my mind when I designed it, maybe I had this idea of mixing timeframes, like weekly and daily
+and seeing if the daily actually crossed the weekly
+2) All the indicator values are calculated first only then it runs through the price in strategy, maybe a design for backtest mode.
+3) New S/R are not merging with S/R.-
+    Solution: The new S/R should merge with S/R then they would be removed from new S/R and added
+    to S/R. This way we have expanded the current S/R from the new S/R and then we are removing its scope 
+
+Design solutions:
+Eventhough I have this particular logic of adding 2 datapoints into the indicator, I decided for the simplicity I will just stick with 1 data for the time being.
+

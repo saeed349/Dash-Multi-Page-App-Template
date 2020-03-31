@@ -103,6 +103,7 @@ def load_data(symbol, symbol_id, vendor_id, conn, start_date):
                                'high_price', 'low_price', 'close_price', 'volume']
         newDF = pd.DataFrame()
         newDF['date_price'] =  data.index
+        newDF['date_price']=newDF['date_price'].apply(lambda x:datetime.datetime.replace(x,tzinfo=None)) # stripping the timezone info, not good on the longterm, especially when the data vendor and broker are different
         data.reset_index(drop=True,inplace=True)
         newDF['open_price'] = data['open']
         newDF['high_price'] = data['high']
@@ -169,7 +170,7 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='M1',client
 
 def main():
 
-    initial_start_date = datetime.datetime(2019,12,30)
+    initial_start_date = datetime.datetime(2020,1,10)
     
     db_host=db_secmaster_cred.dbHost 
     db_user=db_secmaster_cred.dbUser
@@ -187,6 +188,11 @@ def main():
     Key="interested_tickers.xlsx"
     read_file = s3.get_object(Bucket=Bucket, Key=Key)
     df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="minute")
+
+    # ticker_info_file = "interested_tickers.xlsx"
+    # cur_path = os.path.dirname(os.path.abspath(__file__))
+    # f = os.path.join(cur_path,ticker_info_file)
+    # df_tickers=pd.read_excel(f,sheet_name='minute')
 
     if df_tickers.empty:
         print("Empty Ticker List")

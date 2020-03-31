@@ -25,7 +25,7 @@ class PostgreSQL_Daily(DataBase):
 
     def start(self):
         self.conn = self.engine.connect()
-        sql = "select a.date_price date, a.close_price as close, a.high_price high, a.open_price open, a.low_price low from daily_data a inner join symbol b on a.stock_id = b.id where b.ticker='"+ self.p.ticker + "' and a.date_price between '"+self.p.fromdate.strftime("%Y-%m-%d")+"' and '"+self.p.todate.strftime("%Y-%m-%d")+"' order by date ASC"
+        sql = "select a.date_price date, a.open_price open, a.high_price high, a.low_price low, a.close_price as close, a.volume from daily_data a inner join symbol b on a.stock_id = b.id where b.ticker='"+ self.p.ticker + "' and a.date_price between '"+self.p.fromdate.strftime("%Y-%m-%d")+"' and '"+self.p.todate.strftime("%Y-%m-%d")+"' order by date ASC"
         self.result = self.conn.execute(sql)
         
 
@@ -42,7 +42,7 @@ class PostgreSQL_Daily(DataBase):
         self.lines.high[0] = float(one_row[2])
         self.lines.low[0] = float(one_row[3])
         self.lines.close[0] = float(one_row[4])
-#         self.lines.volume[0] = int(one_row[5])
+        self.lines.volume[0] = int(one_row[5])
         self.lines.openinterest[0] = -1
         return True
     
@@ -65,7 +65,7 @@ class PostgreSQL_Minute(DataBase):
 
     def start(self):
         self.conn = self.engine.connect()
-        sql = "select a.date_price date, a.close_price as close, a.high_price high, a.open_price open, a.low_price low from minute_data a inner join symbol b on a.stock_id = b.id where b.ticker='"+ self.p.ticker + "' and a.date_price between '"+self.p.fromdate.strftime("%Y-%m-%d")+"' and '"+self.p.todate.strftime("%Y-%m-%d")+"' order by date ASC"
+        sql = "select a.date_price date, a.open_price open, a.high_price high, a.low_price low, a.close_price as close, a.volume from minute_data a inner join symbol b on a.stock_id = b.id where b.ticker='"+ self.p.ticker + "' and a.date_price between '"+self.p.fromdate.strftime("%Y-%m-%d")+"' and '"+self.p.todate.strftime("%Y-%m-%d")+"' order by date ASC"
         self.result = self.conn.execute(sql)
         
 
@@ -82,6 +82,6 @@ class PostgreSQL_Minute(DataBase):
         self.lines.high[0] = float(one_row[2])
         self.lines.low[0] = float(one_row[3])
         self.lines.close[0] = float(one_row[4])
-#         self.lines.volume[0] = int(one_row[5])
+        self.lines.volume[0] = int(one_row[5])
         self.lines.openinterest[0] = -1
         return True

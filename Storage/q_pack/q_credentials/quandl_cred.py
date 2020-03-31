@@ -1,0 +1,1 @@
+quandl_api="JsSvQLZWiw2KYHdJbZS6"

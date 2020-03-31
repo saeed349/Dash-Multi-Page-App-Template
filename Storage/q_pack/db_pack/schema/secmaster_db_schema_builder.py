@@ -87,20 +87,26 @@ def create_mkt_tables(db_credential_info):
                     CREATE TABLE symbol (
                         id SERIAL PRIMARY KEY,
                         exchange_id integer NULL,
+                        data_vendor_id integer NULL,
                         ticker TEXT NOT NULL,
                         instrument TEXT NOT NULL,
-                        name TEXT NOT NULL,
-                        sector TEXT NOT NULL,
+                        name TEXT NULL,
+                        sector TEXT NULL,
                         currency VARCHAR(64) NULL,
+                        shortable BOOL NULL,
+                        easy_to_borrow BOOL NULL,
+                        marginable BOOL NULL,
+                        tradable BOOL NULL,
+                        status TEXT NULL,
                         created_date TIMESTAMP NOT NULL,
                         last_updated_date TIMESTAMP NOT NULL,
+                        FOREIGN KEY (data_vendor_id) REFERENCES data_vendor(id),
                         FOREIGN KEY (exchange_id) REFERENCES exchange(id)
                         )
                     """,
                     """
                     CREATE TABLE daily_data (
                         id SERIAL PRIMARY KEY,
-                        data_vendor_id INTEGER NOT NULL,
                         stock_id INTEGER NOT NULL,
                         created_date TIMESTAMP NOT NULL,
                         last_updated_date TIMESTAMP NOT NULL,
@@ -110,14 +116,12 @@ def create_mkt_tables(db_credential_info):
                         low_price NUMERIC,
                         close_price NUMERIC,
                         volume BIGINT,
-                        FOREIGN KEY (data_vendor_id) REFERENCES data_vendor(id),
                         FOREIGN KEY (stock_id) REFERENCES symbol(id)
                         )
                     """,
                     """
                      CREATE TABLE minute_data (
                         id SERIAL PRIMARY KEY,
-                        data_vendor_id INTEGER NOT NULL,
                         stock_id INTEGER NOT NULL,
                         created_date TIMESTAMP NOT NULL,
                         last_updated_date TIMESTAMP NOT NULL,
@@ -127,7 +131,6 @@ def create_mkt_tables(db_credential_info):
                         low_price NUMERIC,
                         close_price NUMERIC,
                         volume BIGINT,
-                        FOREIGN KEY (data_vendor_id) REFERENCES data_vendor(id),
                         FOREIGN KEY (stock_id) REFERENCES symbol(id)
                         )      
                     """)

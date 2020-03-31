@@ -101,7 +101,11 @@ def load_data(symbol, symbol_id, vendor_id, conn, start_date):
                                'last_updated_date', 'date_price', 'open_price',
                                'high_price', 'low_price', 'close_price', 'volume']
         newDF = pd.DataFrame()
-        newDF['date_price'] =  data.index
+        # For oanda each candle starts at UTC 22, so when the returned timestamp says 2020-01-09T22:00:00.000000000Z, it is actualy for 2020-01-10 
+        # because the timestamp is the beginning of the candle (that is the open) and the close would be at 2020-01-10T22:00:00.000000000Z and therefore we need
+        # to add a couple of hours so that it would be the next day and then we can extract the date to reflect the exact date.  This is not at all a neat way of 
+        # doing it. Need to deal with timezone and should set timezone rules for consuming the data into the db.
+        newDF['date_price'] =  (data.index+pd.DateOffset(hours=3)).date
         data.reset_index(drop=True,inplace=True)
         newDF['open_price'] = data['open']
         newDF['high_price'] = data['high']
@@ -143,8 +147,8 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='D',client=
     params = {
     "from": start_date,
     "to": end_date,
-    "granularity": granularity,
-    "count": 2500,
+    "granularity": granularity
+    ,"count": 2500,
     }
 
     df_full=pd.DataFrame()
@@ -187,6 +191,11 @@ def main():
     read_file = s3.get_object(Bucket=Bucket, Key=Key)
     df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
 
+
+    # ticker_info_file = "interested_tickers.xlsx"
+    # cur_path = os.path.dirname(os.path.abspath(__file__))
+    # f = os.path.join(cur_path,ticker_info_file)
+    # df_tickers=pd.read_excel(f,sheet_name='daily')
 
     if df_tickers.empty:
         print("Empty Ticker List")

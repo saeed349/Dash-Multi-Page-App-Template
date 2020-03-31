@@ -1,3 +1,5 @@
+# this is temporary to support other non-updated not used analyzers, delete it later
+
 import psycopg2
 
 def write_to_db(conn, data_dict, table, return_col=""):
@@ -17,3 +19,4 @@ def write_to_db(conn, data_dict, table, return_col=""):
     conn.commit()
     if db_run_id:
         return db_run_id
+
