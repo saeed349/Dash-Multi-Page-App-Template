@@ -8,7 +8,7 @@ import psycopg2
 import boto3
 from io import StringIO
 
-import q_credentials.db_secmaster_cloud_cred as db_secmaster_cred
+import q_credentials.db_secmaster_cred as db_secmaster_cred
 import q_credentials.db_indicator_cred as db_indicator_cred
 import q_tools.write_db as write_db
 import q_tools.read_db as read_db

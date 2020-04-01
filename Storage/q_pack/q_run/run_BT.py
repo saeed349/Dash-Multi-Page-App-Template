@@ -11,7 +11,7 @@ import pytz
 import q_datafeeds.bt_datafeed_postgres as bt_datafeed_postgres
 from q_strategies import *
 import q_credentials.oanda_cred as oanda_cred
-import q_credentials.db_secmaster_cloud_cred as db_cred
+import q_credentials.db_secmaster_cred as db_cred
 # import q_credentials.db_secmaster_cred as db_cred
 import q_analyzers.bt_strat_perform_analyzer as bt_strat_performance_analyzer
 import q_analyzers.bt_pos_perform_analyzer as bt_pos_performance_analyzer
@@ -91,7 +91,7 @@ def parse_args(pargs=None):
         description=('Rebalancing with the Conservative Formula'),
     )
 
-    parser.add_argument('--tickers', nargs='*' ,required=False,default=['PZZA,MSFT,AMZN'], type=str, #['EUR_USD,GBP_USD'] #['PZZA']
+    parser.add_argument('--tickers', nargs='*' ,required=False,default=['BOM500010,BOM500034,BOM500087'], type=str, #['EUR_USD,GBP_USD'] #['PZZA']
                         help='Pass the tickers with space')
 
     parser.add_argument('--dargs', default='',

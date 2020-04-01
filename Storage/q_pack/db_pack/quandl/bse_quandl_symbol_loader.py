@@ -42,6 +42,7 @@ def insert_symbols(conn,exchange_id,data_vendor_id):
     df['last_updated_date']=now
     df=df.loc[:, df.columns != 'Quandl Code']
     write_db.write_db_dataframe(df=df, conn=conn, table='symbol') 
+    print("Loaded Symbols=",len(df))
 
 
 def main():
