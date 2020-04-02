@@ -16,4 +16,3 @@ xlrd
 gspread
 oauth2client
 quandl
-qgrid

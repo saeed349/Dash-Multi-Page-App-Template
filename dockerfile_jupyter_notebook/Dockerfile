@@ -1,5 +1,6 @@
 # FROM jupyter/scipy-notebook
-FROM jupyter/base-notebook
+# FROM jupyter/base-notebook
+FROM jupyter/scipy-notebook
 
 USER root
 
