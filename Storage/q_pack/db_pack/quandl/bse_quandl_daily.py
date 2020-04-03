@@ -47,10 +47,11 @@ def load_data(symbol, symbol_id, conn, start_date):
     
     try:
         # data = api.polygon.historic_agg_v2(symbol, 1, 'day', _from=start_date.strftime("%Y-%m-%d"),to=datetime.datetime.now().strftime("%Y-%m-%d")).df
+        print(end_date)
         data = quandl.get(('BSE/'+symbol), 
             returns='pandas', 
             start_date=start_date,
-            end_date=end_date,
+            # end_date=end_date,
             collapse='daily',
             order='asc'
             )

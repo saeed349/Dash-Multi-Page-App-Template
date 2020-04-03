@@ -47,6 +47,7 @@ services:
         ports:    
             - "1000:8888"
 
+            
 
     redis:
         image: redis

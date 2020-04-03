@@ -129,7 +129,7 @@ class Level_Indicator(bt.Indicator):
         min_Tperiod=time_dict[self.data._timeframe]*self.data._compression
         max_Tperiod=time_dict[self.data._timeframe]*self.data._compression
         min_period=int((max_Tperiod*1)/min_Tperiod)
-        print("Min period=",min_period)
+        # print("Min period=",min_period)
         self.addminperiod(min_period+1)      
         self.atr = bt.indicators.ATR(self.data, period=5)
         self.level = {'support':[],
@@ -158,12 +158,14 @@ class Level_Indicator(bt.Indicator):
                 self.indicator_df=pd.read_sql(sql,conn_indicator) 
                 self.indicator_df.set_index('date_price',inplace=True)
                 self.indicator_df=pd.concat([self.indicator_df.drop(['value'], axis=1), self.indicator_df['value'].apply(pd.Series)], axis=1)
-                print("got data")
+                # print("got data")
                 self.latest_db_date=self.indicator_df.index.max()
                 self.level['support'] = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in self.indicator_df.iloc[-1]['support']]
                 self.level['resistance'] = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in self.indicator_df.iloc[-1]['resistance']]
             except:
-                print("no indicator data")
+                print("no indicator data for "+sec_name)
+        if ~(isinstance(self.latest_db_date, datetime.datetime)):
+            self.latest_db_date = datetime.datetime(2000, 1, 1)
     # N: This looks where the fractal points beeing added    
     def add_level(self,support=True):
         side='Bull' if(self.data.close[-2]>self.data.open[-2]) else 'Bear'

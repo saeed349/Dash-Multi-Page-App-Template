@@ -47,7 +47,7 @@ class Candle_Indicator(bt.Indicator):
             min_Tperiod=time_dict[self.data._timeframe]*self.data._compression
             max_Tperiod=time_dict[self.data._timeframe]*self.data._compression
             min_period=int((max_Tperiod*3)/min_Tperiod)
-            print("Min period=",min_period)
+            # print("Min period=",min_period)
             self.addminperiod(min_period)
         except:
             self.addminperiod(3)

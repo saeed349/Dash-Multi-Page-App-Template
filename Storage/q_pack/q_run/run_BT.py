@@ -3,6 +3,9 @@ import datetime
 import glob
 import os.path
 import backtrader as bt
+import boto3
+import io
+import pandas as pd
 
 
 import btoandav20
@@ -30,7 +33,15 @@ def run(args=None):
     # Data feed kwargs
     dkwargs = dict(**eval('dict(' + args.dargs + ')'))
 
-    ticker_list=args.tickers[0].split(',')
+    if args.load_symbol:
+        s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
+        Bucket="airflow-files"
+        Key="interested_tickers_quandl.xlsx"
+        read_file = s3.get_object(Bucket=Bucket, Key=Key)
+        df = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
+        ticker_list = list(df['Tickers'])
+    else:
+        ticker_list=args.tickers[0].split(',')
 
     dtfmt, tmfmt = '%Y-%m-%d', 'T%H:%M:%S'
     if args.fromdate:
@@ -132,6 +143,9 @@ def parse_args(pargs=None):
 
     parser.add_argument('--load_indicator_db', required=False, default=True, type=args_parse_other.str2bool, const=True, nargs='?',
                     help='load the indicator data into DB')
+
+    parser.add_argument('--load_symbol', required=False, default=True, type=args_parse_other.str2bool, const=True, nargs='?',
+                    help='load the symbols from excel file')
 
     return parser.parse_args(pargs)
 
