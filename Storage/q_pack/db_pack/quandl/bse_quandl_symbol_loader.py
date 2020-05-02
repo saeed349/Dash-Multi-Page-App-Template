@@ -17,7 +17,6 @@ import pandas as pd
 import json
 
 # import q_credentials.db_secmaster_cloud_cred as db_secmaster_cred
-
 import q_credentials.db_secmaster_cred as db_secmaster_cred
 import q_credentials.quandl_cred as quandl_cred
 import q_tools.read_db as read_db

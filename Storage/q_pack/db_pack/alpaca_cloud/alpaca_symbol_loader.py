@@ -23,7 +23,6 @@ def get_symbols(conn,exchange_id,data_vendor_id):
     secret_key=alpaca_cred.secret_key
     api = tradeapi.REST(api_key, secret_key)
     active_assets = api.list_assets(status='active')
-
     symbols = []
     for symbol in active_assets:
         if symbol.exchange=='NASDAQ':
