@@ -47,6 +47,25 @@ services:
         ports:    
             - "1000:8888"
 
+    
+    etl-image:
+        container_name: "etl-image"
+        build:
+            context: ./dockerfile_etl
+        volumes:
+            - ${WD}/etl:/app
+            - ${WD}/q_pack:/q_pack
+        environment:
+            MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
+            AWS_ACCESS_KEY_ID: minio-image
+            AWS_SECRET_ACCESS_KEY: minio-image-pass    
+            MLFLOW_TRACKING_URI: http://mlflow-image:5500 
+            # PORT: '66'       
+        ports:    
+            - "8060:8060"
+        # command: gunicorn -w 1 -b :8060 app:app
+        command: gunicorn -b :8060 app:app
+
             
 
     redis:
