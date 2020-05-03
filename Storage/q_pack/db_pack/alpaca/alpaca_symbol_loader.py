@@ -29,10 +29,12 @@ def insert_symbols(conn,exchange_id,data_vendor_id):
     active_assets = api.list_assets(status='active')
     symbols = []
     for symbol in active_assets:
-        if symbol.exchange=='NYSE':
-            symbols.append((symbol.symbol,'us_equity',symbol.name,'USD',symbol.shortable,symbol.easy_to_borrow,symbol.marginable,symbol.tradable,symbol.status,exchange_id,data_vendor_id,now,now))
+        if symbol.exchange=='NASDAQ':
+            symbols.append({'ticker':symbol.symbol,'instrument':'Equity','name':symbol.name,'currency':'USD','shortable':symbol.shortable,'easy_to_borrow':symbol.easy_to_borrow,'marginable':symbol.marginable,'tradable':symbol.tradable,'status':symbol.status,'exchange_id':exchange_id,'data_vendor_id':data_vendor_id,'created_date':now,'last_updated_date':now})
+            # symbols.append((symbol.symbol,'us_equity',symbol.name,'USD',symbol.shortable,symbol.easy_to_borrow,symbol.marginable,symbol.tradable,symbol.status,exchange_id,data_vendor_id,now,now))
+    pd.DataFrame(symbols).to_csv('test.csv')
     write_db.write_db_dataframe(df=pd.DataFrame(symbols), conn=conn, table='symbol') 
-
+    print("number of symbols loaded = ",len(symbols))
 
 def main():
     db_host=db_secmaster_cred.dbHost 
@@ -41,13 +43,13 @@ def main():
     db_name=db_secmaster_cred.dbName
     conn = psycopg2.connect(host=db_host, database=db_name, user=db_user, password=db_password)    
 
-    exchange = 'NYSE'
+    exchange = 'NASDAQ'
     exchange_id = []
     sql="SELECT id FROM exchange WHERE abbrev = '%s'" % (exchange,)
     exchange_id=read_db.read_db_single(sql,conn)
     if exchange_id=='':
-        exchange_abbrev = 'NYSE'
-        exchange_name = 'New York Stock Exchange'
+        exchange_abbrev = 'NASDAQ'
+        exchange_name = 'National Association of Securities Dealers Automated Quotations'
         write_db.write_db_single(conn=conn, data_dict={'abbrev':exchange_abbrev,'name':exchange_name,'created_date':datetime.datetime.utcnow(),'last_updated_date':datetime.datetime.utcnow()}, table='exchange')
         print("Adding new Exchange ",exchange_name)
         sql="SELECT id FROM exchange WHERE abbrev = '%s'" % (exchange)
@@ -65,6 +67,6 @@ def main():
         data_vendor_id=read_db.read_db_single(sql,conn)
 
     insert_symbols(conn,exchange_id,data_vendor_id)    
-    
+
 if __name__ == "__main__":
     main()   

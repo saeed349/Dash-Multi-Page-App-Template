@@ -31,22 +31,11 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 import alpaca_trade_api as tradeapi
 import q_credentials.alpaca_cred as alpaca_cred
-import q_credentials.db_secmaster_cloud_cred as db_secmaster_cred
+# import q_credentials.db_secmaster_cloud_cred as db_secmaster_cred
+import q_credentials.db_secmaster_cred as db_secmaster_cred
+import q_tools.read_db as read_db
+import q_tools.write_db as write_db
 MASTER_LIST_FAILED_SYMBOLS = []
-
-def obtain_list_db_tickers(conn, vendor_name):
-    with conn:
-        cur = conn.cursor()
-        cur.execute("SELECT s.id, s.ticker FROM symbol s INNER JOIN data_vendor v ON (s.data_vendor_id = v.id) where v.name = %s", (vendor_name,)) 
-        data = cur.fetchall()
-        return [(d[0], d[1]) for d in data]
-
-def fetch_data_vendor_id(vendor, conn):
-    cur = conn.cursor()
-    cur.execute("SELECT id FROM data_vendor WHERE name = %s", (vendor,))
-    data_vendor_id = cur.fetchall()
-    data_vendor_id = data_vendor_id[0][0]
-    return data_vendor_id
 
 def load_data(symbol, symbol_id, conn, start_date):
     api = tradeapi.REST(alpaca_cred.api_key, alpaca_cred.secret_key)
@@ -55,11 +44,9 @@ def load_data(symbol, symbol_id, conn, start_date):
     end_dt = datetime.datetime.now()
     if end_dt.isoweekday() in set((6, 7)): # to take the nearest weekday
         end_dt -= datetime.timedelta(days=end_dt.isoweekday() % 5)
-    
     try:
         # data = api.get_barset([symbol], 'day', start=start_date).df[symbol]# the start_date functionality is not working with Alpaca
         data = api.polygon.historic_agg_v2(symbol, 1, 'day', _from=start_date.strftime("%Y-%m-%d"),to=datetime.datetime.now().strftime("%Y-%m-%d")).df
-        # data = yf.download(symbol, start=start_dt, end=end_dt)
     except:
         MASTER_LIST_FAILED_SYMBOLS.append(symbol)
         raise Exception('Failed to load {}'.format(symbol))
@@ -95,19 +82,8 @@ def load_data(symbol, symbol_id, conn, start_date):
         print(newDF['date_price'].max())
         print("")
 
-        # convert our dataframe to a list
-        list_of_lists = newDF.values.tolist()
-        # convert our list to a list of tuples       
-        tuples_mkt_data = [tuple(x) for x in list_of_lists]
+        write_db.write_db_dataframe(df=newDF, conn=conn, table='daily_data') 
 
-        # WRITE DATA TO DB
-        insert_query =  """
-                        INSERT INTO daily_data (stock_id, created_date,
-                        last_updated_date, date_price, open_price, high_price, low_price, close_price, volume) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """
-        cur.executemany(insert_query, tuples_mkt_data)
-        conn.commit()    
         print('{} complete!'.format(symbol))
 
 def main():
@@ -122,28 +98,14 @@ def main():
     conn = psycopg2.connect(host=db_host, database=db_name, user=db_user, password=db_password)
 
     vendor = 'Alpaca'
-    data_vendor_id = fetch_data_vendor_id(vendor, conn)
+    sql="SELECT id FROM data_vendor WHERE name = '%s'" % (vendor)
+    data_vendor_id=read_db.read_db_single(sql,conn)   
 
-    root_path = os.path.abspath(os.curdir)
-    cred_path = os.path.join(root_path,'q_pack\q_credentials\gcloud_cred.json')
-
-    scope = ['https://spreadsheets.google.com/feeds',
-         'https://www.googleapis.com/auth/drive']
-
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-         cred_path, scope) # Your json file here
-
-    gc = gspread.authorize(credentials)
-    ss = gc.open("Symbols") 
-    wks = ss.worksheet("Daily")
-    data = wks.get_all_values()
-    headers = data.pop(0)
-    df_tickers = pd.DataFrame(data, columns=headers)
-    # ticker_info_file = "interested_tickers_equity.xlsx"
-    # cur_path = os.path.dirname(os.path.abspath(__file__))
-    # f = os.path.join(cur_path,ticker_info_file)
-    # df_tickers=pd.read_excel(f,sheet_name='daily')
-
+    s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
+    Bucket="airflow-files"
+    Key="interested_tickers_alpaca.xlsx"
+    read_file = s3.get_object(Bucket=Bucket, Key=Key)
+    df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
 
     if df_tickers.empty:
         print("Empty Ticker List")
@@ -162,6 +124,7 @@ def main():
         # Adding 1 day, so that the data is appended starting next date
         df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(days=1)
         
+
         startTime = datetime.datetime.now()
 
         print (datetime.datetime.now() - startTime)
@@ -171,6 +134,7 @@ def main():
             last_date = stock['last_date']
             symbol_id = stock['stock_id']
             symbol = stock['ticker']
+            print(symbol)
             try:
                 load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date)
             except:

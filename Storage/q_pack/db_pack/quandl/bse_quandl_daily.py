@@ -114,10 +114,7 @@ def main():
     Key="interested_tickers_quandl.xlsx"
     read_file = s3.get_object(Bucket=Bucket, Key=Key)
     df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
-    # ticker_info_file = "interested_tickers.xlsx"
-    # cur_path = os.path.dirname(os.path.abspath(__file__))
-    # f = os.path.join(cur_path,ticker_info_file)
-    # df_tickers=pd.read_excel(f,sheet_name='daily')
+
 
 
     if df_tickers.empty:

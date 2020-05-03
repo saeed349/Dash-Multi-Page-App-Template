@@ -36,7 +36,7 @@ def run(args=None):
     if args.load_symbol:
         s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
         Bucket="airflow-files"
-        Key="interested_tickers_quandl.xlsx"
+        Key="interested_tickers_alpaca.xlsx"
         read_file = s3.get_object(Bucket=Bucket, Key=Key)
         df = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
         ticker_list = list(df['Tickers'])
@@ -102,7 +102,7 @@ def parse_args(pargs=None):
         description=('Rebalancing with the Conservative Formula'),
     )
 
-    parser.add_argument('--tickers', nargs='*' ,required=False,default=['BOM500010,BOM500034,BOM500087'], type=str, #['EUR_USD,GBP_USD'] #['PZZA']
+    parser.add_argument('--tickers', nargs='*' ,required=False,default=['AAPL,MSFT'], type=str, #['EUR_USD,GBP_USD'] #['PZZA'] #['BOM500010,BOM500034,BOM500087']
                         help='Pass the tickers with space')
 
     parser.add_argument('--dargs', default='',
