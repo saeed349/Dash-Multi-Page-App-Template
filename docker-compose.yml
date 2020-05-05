@@ -54,7 +54,7 @@ services:
             context: ./dockerfile_etl
         volumes:
             - ${WD}/etl:/app
-            - ${WD}/q_pack:/q_pack
+            - ${WD}/q_pack:/app/q_pack
         environment:
             MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
             AWS_ACCESS_KEY_ID: minio-image
@@ -64,7 +64,7 @@ services:
         ports:    
             - "8060:8060"
         # command: gunicorn -w 1 -b :8060 app:app
-        command: gunicorn -b :8060 app:app
+        command: gunicorn -c gunicorn_config.py -b :8060 app:app
 
             
 

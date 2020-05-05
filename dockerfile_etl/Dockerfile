@@ -6,7 +6,7 @@ FROM python:3.7-slim
 COPY requirements.txt /tmp/
 RUN pip install --requirement /tmp/requirements.txt
 
-ENV PYTHONPATH "${PYTHONPATH}:/q_pack"
+ENV PYTHONPATH "${PYTHONPATH}:/app/q_pack"
 
 WORKDIR /app
     
