@@ -4,3 +4,5 @@ Storage/minio/storage/.minio.sys
 Storage/superset/Additional
 Storage/minio/storage/mlflow-models/
 Storage/minio/storage/support-files/
+Storage/pgadmin/
+*.pyc 
