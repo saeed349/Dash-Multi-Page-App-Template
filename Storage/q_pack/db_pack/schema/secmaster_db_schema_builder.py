@@ -65,16 +65,6 @@ def create_mkt_tables(db_credential_info):
     if check_db_exists(db_credential_info):
         commands = (
                     """
-                    CREATE TABLE exchange (
-                        id SERIAL PRIMARY KEY,
-                        abbrev TEXT NOT NULL,
-                        name TEXT NOT NULL,
-                        currency VARCHAR(64) NULL,
-                        created_date TIMESTAMP NOT NULL,
-                        last_updated_date TIMESTAMP NOT NULL
-                        )
-                    """,
-                    """
                     CREATE TABLE data_vendor (
                         id SERIAL PRIMARY KEY,
                         name TEXT UNIQUE NOT NULL,
@@ -86,7 +76,7 @@ def create_mkt_tables(db_credential_info):
                     """
                     CREATE TABLE symbol (
                         id SERIAL PRIMARY KEY,
-                        exchange_id integer NULL,
+                        exchange TEXT NULL,
                         data_vendor_id integer NULL,
                         ticker TEXT NOT NULL,
                         instrument TEXT NOT NULL,
@@ -100,8 +90,7 @@ def create_mkt_tables(db_credential_info):
                         status TEXT NULL,
                         created_date TIMESTAMP NOT NULL,
                         last_updated_date TIMESTAMP NOT NULL,
-                        FOREIGN KEY (data_vendor_id) REFERENCES data_vendor(id),
-                        FOREIGN KEY (exchange_id) REFERENCES exchange(id)
+                        FOREIGN KEY (data_vendor_id) REFERENCES data_vendor(id)
                         )
                     """,
                     """
