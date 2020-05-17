@@ -87,7 +87,7 @@ def load_data(symbol, symbol_id, conn, start_date):
         print('{} complete!'.format(symbol))
 
 def main():
-    initial_start_date = datetime.datetime(2004,12,30)
+    initial_start_date = datetime.datetime(2010,12,30)
     
     db_host=db_secmaster_cred.dbHost 
     db_user=db_secmaster_cred.dbUser

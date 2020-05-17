@@ -45,6 +45,7 @@ class indicator_analyzer(bt.Analyzer):
         if self.strategy.p.backtest:   
             for i, d in enumerate(self.datas):
                 num_of_indicators=int(len(self.strategy.getindicators())/len(self.strategy.datas))
+                print(d._name)
                 for j in range(num_of_indicators):
                     sec_name=d._name
                     ind = self.strategy.getindicators()[j*num_of_sec+i]

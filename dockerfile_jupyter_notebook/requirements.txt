@@ -16,3 +16,5 @@ xlrd
 gspread
 oauth2client
 quandl
+pyfolio
+alphalens

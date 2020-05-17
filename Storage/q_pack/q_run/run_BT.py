@@ -6,7 +6,7 @@ import backtrader as bt
 import boto3
 import io
 import pandas as pd
-
+from sqlalchemy import create_engine
 
 import btoandav20
 import pytz
@@ -73,10 +73,14 @@ def run(args=None):
         cerebro.addstrategy(globals()[args.strat_name].St, backtest=False)
 
     elif args.mode=='backtest':
-
+        db_engine = create_engine('postgresql+psycopg2://'+db_cred.dbUser+':'+ db_cred.dbPWD +'@'+ db_cred.dbHost +'/'+ db_cred.dbName)
+        conn = db_engine.connect()
         for ticker in ticker_list:
-            data = bt_datafeed_postgres.PostgreSQL_Daily(dbHost=db_cred.dbHost,dbUser=db_cred.dbUser,dbPWD=db_cred.dbPWD,dbName=db_cred.dbName,ticker=ticker, name=ticker,**dkwargs)
+            # data = bt_datafeed_postgres.PostgreSQL_Daily(dbHost=db_cred.dbHost,dbUser=db_cred.dbUser,dbPWD=db_cred.dbPWD,dbName=db_cred.dbName,ticker=ticker, name=ticker,**dkwargs)
+            data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs)
             cerebro.adddata(data)
+        # conn.close()
+        db_engine.dispose()
         cerebro.broker.setcash(args.cash)
         cerebro.addstrategy(globals()[args.strat_name].St, **args.strat_param)
  
@@ -108,7 +112,7 @@ def parse_args(pargs=None):
     parser.add_argument('--dargs', default='',
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
 
-    parser.add_argument('--fromdate', required=False, default='2017-7-1',
+    parser.add_argument('--fromdate', required=False, default='2015-7-1',
                         help='Date[time] in YYYY-MM-DD[THH:MM:SS] format')
 
     parser.add_argument('--todate', required=False, default='2019-05-01',
