@@ -32,41 +32,13 @@ import oandapyV20.endpoints.accounts as accounts
 import oandapyV20
 import q_credentials.db_secmaster_cred as db_secmaster_cred
 import q_credentials.oanda_cred as oanda_cred
+import q_tools.read_db as read_db
+import q_tools.write_db as write_db
+
 MASTER_LIST_FAILED_SYMBOLS = []
 
-def obtain_list_db_tickers(conn):
-    """
-    query our Postgres database table 'symbol' for a list of all tickers in our symbol table
-    args:
-        conn: a Postgres DB connection object
-    returns: 
-        list of tuples
-    """
-    with conn:
-        cur = conn.cursor()
-        cur.execute("SELECT id, ticker FROM symbol")
-        data = cur.fetchall()
-        return [(d[0], d[1]) for d in data]
 
-def fetch_vendor_id(vendor_name, conn):
-    """
-    Retrieve our vendor id from our PostgreSQL DB, table data_vendor.
-    args:
-        vendor_name: name of our vendor, type string.
-        conn: a Postgres DB connection object
-    return:
-        vendor id as integer
-    """
-    cur = conn.cursor()
-    cur.execute("SELECT id FROM data_vendor WHERE name = %s", (vendor_name,))
-    # will return a list of tuples
-    vendor_id = cur.fetchall()
-    # index to our first tuple and our first value
-    vendor_id = vendor_id[0][0]
-    return vendor_id
-
-
-def load_data(symbol, symbol_id, vendor_id, conn, start_date):
+def load_data(symbol, symbol_id, conn, start_date):
     """
     This will load stock data (date+OHLCV) and additional info to our daily_data table.
     args:
@@ -77,7 +49,6 @@ def load_data(symbol, symbol_id, vendor_id, conn, start_date):
     return:
         None
     """
-
     client = oandapyV20.API(access_token=oanda_cred.token_practice)
     cur = conn.cursor()
     end_dt = datetime.datetime.now()
@@ -86,8 +57,8 @@ def load_data(symbol, symbol_id, vendor_id, conn, start_date):
     
     try:
         data = oanda_historical_data(instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=end_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
-        # data = yf.download(symbol, start=start_dt, end=end_dt)
     except:
+        print("exception")
         MASTER_LIST_FAILED_SYMBOLS.append(symbol)
         raise Exception('Failed to load {}'.format(symbol))
 
@@ -97,7 +68,7 @@ def load_data(symbol, symbol_id, vendor_id, conn, start_date):
     else:        
         # create new dataframe matching our table schema
         # and re-arrange our dataframe to match our database table
-        columns_table_order = ['data_vendor_id', 'stock_id', 'created_date', 
+        columns_table_order = ['stock_id', 'created_date', 
                                'last_updated_date', 'date_price', 'open_price',
                                'high_price', 'low_price', 'close_price', 'volume']
         newDF = pd.DataFrame()
@@ -113,12 +84,9 @@ def load_data(symbol, symbol_id, vendor_id, conn, start_date):
         newDF['close_price'] = data['close']
         newDF['volume'] = data['volume']
         newDF['stock_id'] = symbol_id
-        newDF['data_vendor_id'] = vendor_id
         newDF['created_date'] = datetime.datetime.utcnow()
         newDF['last_updated_date'] = datetime.datetime.utcnow()
         newDF = newDF[columns_table_order]
-
-
         # ensure our data is sorted by date
         newDF = newDF.sort_values(by=['date_price'], ascending = True)
 
@@ -127,19 +95,7 @@ def load_data(symbol, symbol_id, vendor_id, conn, start_date):
         print(newDF['date_price'].max())
         print("")
 
-        # convert our dataframe to a list
-        list_of_lists = newDF.values.tolist()
-        # convert our list to a list of tuples       
-        tuples_mkt_data = [tuple(x) for x in list_of_lists]
-
-        # WRITE DATA TO DB
-        insert_query =  """
-                        INSERT INTO daily_data (data_vendor_id, stock_id, created_date,
-                        last_updated_date, date_price, open_price, high_price, low_price, close_price, volume) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """
-        cur.executemany(insert_query, tuples_mkt_data)
-        conn.commit()    
+        write_db.write_db_dataframe(df=newDF, conn=conn, table='daily_data') 
         print('{} complete!'.format(symbol))
 
 
@@ -171,8 +127,7 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='D',client=
     return df_full
 
 def main():
-
-    initial_start_date = datetime.datetime(2010,12,30)
+    initial_start_date = datetime.datetime(2015,12,30)
     
     db_host=db_secmaster_cred.dbHost 
     db_user=db_secmaster_cred.dbUser
@@ -183,19 +138,14 @@ def main():
     conn = psycopg2.connect(host=db_host, database=db_name, user=db_user, password=db_password)
 
     vendor = 'Oanda'
-    vendor_id = fetch_vendor_id(vendor, conn)
+    sql="SELECT id FROM data_vendor WHERE name = '%s'" % (vendor)
+    data_vendor_id=read_db.read_db_single(sql,conn) 
 
     s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
     Bucket="airflow-files"
-    Key="interested_tickers.xlsx"
+    Key="interested_tickers_oanda.xlsx"
     read_file = s3.get_object(Bucket=Bucket, Key=Key)
     df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
-
-
-    # ticker_info_file = "interested_tickers.xlsx"
-    # cur_path = os.path.dirname(os.path.abspath(__file__))
-    # f = os.path.join(cur_path,ticker_info_file)
-    # df_tickers=pd.read_excel(f,sheet_name='daily')
 
     if df_tickers.empty:
         print("Empty Ticker List")
@@ -205,7 +155,7 @@ def main():
             (select max(date_price) as last_date, stock_id
             from daily_data 
             group by stock_id) a right join symbol b on a.stock_id = b.id 
-            where b.ticker in {}""".format(tuple(df_tickers['Tickers'])).replace(",)", ")")
+            where b.ticker in {} and b.data_vendor_id={}""".format(str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
         df_ticker_last_day=pd.read_sql(sql,con=conn)
 
         # Filling the empty dates returned from the DB with the initial start date
@@ -217,19 +167,22 @@ def main():
         startTime = datetime.datetime.now()
 
         print (datetime.datetime.now() - startTime)
-
+        print(sql)
+        print(df_ticker_last_day)
         for i,stock in df_ticker_last_day.iterrows() :
             # download stock data and dump into daily_data table in our Postgres DB
             last_date = stock['last_date']
             symbol_id = stock['stock_id']
             symbol = stock['ticker']
             try:
-                load_data(symbol, symbol_id, vendor_id, conn, start_date=last_date)
+                print(symbol)
+                load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date)
             except:
+                print("exception")
                 continue
 
         # lets write our failed stock list to text file for reference
-        file_to_write = open('failed_symbols.txt', 'w')
+        file_to_write = open('failed_symbols_oanda.txt', 'w')
 
         for symbol in MASTER_LIST_FAILED_SYMBOLS:
             file_to_write.write("%s\n" % symbol)

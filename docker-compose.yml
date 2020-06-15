@@ -90,7 +90,7 @@ services:
             - ${WD}/superset/superset_config.py:/etc/superset/superset_config.py
             - ${WD}/superset/superset.db:/var/lib/superset/superset.db              
         
-    postgres_secmaster:
+    postgres_secmaster: 
         image: postgres
         restart: always
         container_name: "my_postgres"

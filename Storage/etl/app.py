@@ -6,19 +6,29 @@ from flask_restful import Resource, Api
 import db_pack.alpaca.alpaca_daily as alpaca_daily
 import db_pack.alpaca.alpaca_symbol_loader as alpaca_symbol_loader
 
+import db_pack.oanda.oanda_daily as oanda_daily
+import db_pack.oanda.oanda_symbol_loader as oanda_symbol_loader
+
 app = Flask(__name__)
 api = Api(app)
 
 class load_symbols(Resource):
     def get(self,vendor):
-        alpaca_symbol_loader.main()
-        return {'Success':'Symbols Loaded'}
-
+        if vendor=='alpaca':
+            alpaca_symbol_loader.main()
+            return {'Success':'Alpaca Symbols Loaded'}
+        elif vendor=='oanda':
+            oanda_symbol_loader.main()
+            return {'Success':'Oanda Symbols Loaded'}
 
 class load_daily_data(Resource):
     def get(self,vendor):
-        alpaca_daily.main()
-        return {'Success':'Daily Data Loaded'}
+        if vendor=='alpaca':
+            alpaca_daily.main()
+            return {'Success':'Alpaca Daily Data Loaded'}
+        elif vendor=='oanda':
+            oanda_daily.main()
+            return {'Success':'Oanda Daily Data Loaded'}
 class load_indicator_data(Resource):
     def get(self,vendor):
         cmd_str="""python q_pack/q_run/run_BT.py --todate='2020-03-31'"""

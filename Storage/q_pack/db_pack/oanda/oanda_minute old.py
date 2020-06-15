@@ -20,20 +20,21 @@ Future work:
  - Add Date Range in interested_tickers.csv
 """
 
+
 import datetime
 import psycopg2
 import pandas as pd
 import os
-import boto3
 import io
+import boto3
 
 from oandapyV20.contrib.factories import InstrumentsCandlesFactory
 import oandapyV20.endpoints.accounts as accounts
 import oandapyV20
-
 import q_credentials.db_secmaster_cred as db_secmaster_cred
 import q_credentials.oanda_cred as oanda_cred
-
+import q_tools.read_db as read_db
+import q_tools.write_db as write_db
 MASTER_LIST_FAILED_SYMBOLS = []
     
 def obtain_list_db_tickers(conn):
