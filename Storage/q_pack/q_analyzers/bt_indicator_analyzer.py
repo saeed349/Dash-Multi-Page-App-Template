@@ -57,7 +57,7 @@ class indicator_analyzer(bt.Analyzer):
                     time_frame=tframes[d._timeframe]
                     if d._timeframe == 4:
                         time_frame = 'm'+str(d._compression)
-                    print(d._timeframe,d._compression,time_frame)
+                    # print(d._timeframe,d._compression,time_frame)
                     write_to_ind_db(sec_name, ind_name,ind_df, time_frame,self.conn_indicator)
 
 
@@ -76,10 +76,11 @@ def write_to_ind_db(sec_name, ind_name, ind_df, time_frame,conn_indicator, perio
     latest_date=read_db.read_db_single(sql,conn_indicator)  
     if isinstance(latest_date, datetime.datetime):
         ind_df=ind_df[ind_df['date_price']>latest_date]
+    print(len(ind_df))
     ind_df['symbol_id'] = symbol_id
     ind_df['indicator_id'] = ind_id
     ind_df['created_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     write_db.write_db_dataframe(df=ind_df, conn=conn_indicator, table=data_table) 
-    print("done")
+    # print("done")
 # 
 

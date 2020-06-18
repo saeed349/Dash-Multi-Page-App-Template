@@ -19,7 +19,8 @@ class St(bt.Strategy):
         backtest=True,
         ml_serving=False,
         use_db=False,
-        model_uri="24cbdab283244fac8d54405d58b2bbf1"
+        model_uri="24cbdab283244fac8d54405d58b2bbf1",
+        use_level=True
     )
 
 
@@ -51,12 +52,16 @@ class St(bt.Strategy):
         self.candle_3 = [Candle_Pattern_Indicator.Candle_Indicator(d,type=3) for d in self.datas]
         for i in self.candle_3:
             i.aliased='candle_3'
-        self.level_ind = [Level_Indicator.Level_Indicator(d,disp=True,use_db=self.p.use_db) for d in self.datas]
-        for i in self.level_ind:
-            i.aliased='level'
         self.anomaly_ind = [Anomaly_Indicator.Anomaly_Indicator(d) for d in self.datas]
         for i in self.anomaly_ind:
             i.aliased='anomaly'
+
+        if self.p.use_level=='yes':
+            print("using level indicator")
+            self.level_ind = [Level_Indicator.Level_Indicator(d,disp=True,use_db=True if self.p.use_db=='yes' else False) for d in self.datas]
+            for i in self.level_ind:
+                i.aliased='level'
+
 
         # self.level_plot_ind = [Level_Indicator_sr_plot.Level_Indicator(d,disp=False) for d in self.datas]
         # self.fractal_ind = [Custom_Fractal.Custom_Fractal(d) for d in self.datas]
@@ -70,7 +75,7 @@ class St(bt.Strategy):
         else:
             self.datastatus = 0
 
-        if self.p.ml_serving:
+        if self.p.ml_serving=='yes':
             print("s3://mlflow-models/"+self.p.model_uri+"/artifacts/model")
             self.model_predict=mlflow.pyfunc.load_model(model_uri=("s3://mlflow-models/"+self.p.model_uri+"/artifacts/model"))
 

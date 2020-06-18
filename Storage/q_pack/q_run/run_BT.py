@@ -91,8 +91,6 @@ def run(args=None):
             elif args.timeframe == '4hour':
                 data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker)
                 cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 240)
-            # cerebro.adddata(data)
-        # conn.close()
         db_engine.dispose()
         cerebro.broker.setcash(args.cash)
         cerebro.addstrategy(globals()[args.strat_name].St, **args.strat_param)
@@ -145,7 +143,7 @@ def parse_args(pargs=None):
     parser.add_argument('--strat_name', required=False, default='simple_strategy_3', 
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
 
-    parser.add_argument('--strat_param', required=False, default=dict(ml_serving=False,use_db=True),
+    parser.add_argument('--strat_param', required=False, default=dict(ml_serving='no',use_db='yes', use_level='yes'), #--strat_param "use_level=yes,use_db=yes,ml_serving=no"
                         action=args_parse_other.StoreDictKeyPair, metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
 
     parser.add_argument('--ml_log', required=False, default=False, type=args_parse_other.str2bool, const=True, nargs='?',
