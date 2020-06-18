@@ -28,7 +28,7 @@ class indicator_analyzer(bt.Analyzer):
         self.conn_indicator = psycopg2.connect(host=db_indicator_cred.dbHost , database=db_indicator_cred.dbName, user=db_indicator_cred.dbUser, password=db_indicator_cred.dbPWD)
         sql="""select ticker, instrument, name, currency,created_date from symbol"""
         df_symbols=pd.read_sql(sql,con=self.conn_indicator)
-        print(len(df_symbols))
+        # print(len(df_symbols))
         if df_symbols.empty:
             sql="select ticker, instrument, name, currency,created_date from symbol"
             df_symbols=pd.read_sql(sql,con=self.conn_secmaster)
@@ -45,7 +45,7 @@ class indicator_analyzer(bt.Analyzer):
         if self.strategy.p.backtest:   
             for i, d in enumerate(self.datas):
                 num_of_indicators=int(len(self.strategy.getindicators())/len(self.strategy.datas))
-                print(d._name)
+                # print(d._name)
                 for j in range(num_of_indicators):
                     sec_name=d._name
                     ind = self.strategy.getindicators()[j*num_of_sec+i]
@@ -55,6 +55,9 @@ class indicator_analyzer(bt.Analyzer):
                     final_dict=dict(zip(ind_date,ind_list))
                     ind_df=pd.DataFrame(final_dict.items(),columns=['date_price','value']) 
                     time_frame=tframes[d._timeframe]
+                    if d._timeframe == 4:
+                        time_frame = 'm'+str(d._compression)
+                    print(d._timeframe,d._compression,time_frame)
                     write_to_ind_db(sec_name, ind_name,ind_df, time_frame,self.conn_indicator)
 
 

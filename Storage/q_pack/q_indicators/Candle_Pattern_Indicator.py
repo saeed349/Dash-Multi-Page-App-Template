@@ -41,16 +41,17 @@ class Candle_Indicator(bt.Indicator):
     params = (('type', 1),)
     
     def __init__(self):
-        try:
-            day_min=7*60
-            time_dict={4:1,5:(day_min),6:(5*day_min),7:(23*day_min)}
-            min_Tperiod=time_dict[self.data._timeframe]*self.data._compression
-            max_Tperiod=time_dict[self.data._timeframe]*self.data._compression
-            min_period=int((max_Tperiod*3)/min_Tperiod)
-            # print("Min period=",min_period)
-            self.addminperiod(min_period)
-        except:
-            self.addminperiod(3)
+        # try:
+        #     day_min=7*60
+        #     time_dict={4:1,5:(day_min),6:(5*day_min),7:(23*day_min)}
+        #     min_Tperiod=time_dict[self.data._timeframe]*self.data._compression
+        #     max_Tperiod=time_dict[self.data._timeframe]*self.data._compression
+        #     min_period=int((max_Tperiod*3)/min_Tperiod)
+        #     # print("Min period=",min_period)
+        #     self.addminperiod(min_period)
+        # except:
+        #     self.addminperiod(3)
+        self.addminperiod(3)
         self.indicator_list=[]
         self.date_list=[]
     

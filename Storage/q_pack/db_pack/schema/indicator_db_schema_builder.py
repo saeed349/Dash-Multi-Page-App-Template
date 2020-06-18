@@ -84,6 +84,78 @@ def create_mkt_tables(db_credential_info):
                         )
                     """,
                     """
+                    CREATE TABLE m1_data (
+                        id SERIAL PRIMARY KEY,
+                        indicator_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
+                        created_date TIMESTAMP NOT NULL,
+                        date_price TIMESTAMP,
+                        value json NULL,
+                        FOREIGN KEY (indicator_id) REFERENCES indicator(id),
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
+                        )
+                    """,
+                    """
+                    CREATE TABLE m5_data (
+                        id SERIAL PRIMARY KEY,
+                        indicator_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
+                        created_date TIMESTAMP NOT NULL,
+                        date_price TIMESTAMP,
+                        value json NULL,
+                        FOREIGN KEY (indicator_id) REFERENCES indicator(id),
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
+                        )
+                    """,
+                    """
+                    CREATE TABLE m15_data (
+                        id SERIAL PRIMARY KEY,
+                        indicator_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
+                        created_date TIMESTAMP NOT NULL,
+                        date_price TIMESTAMP,
+                        value json NULL,
+                        FOREIGN KEY (indicator_id) REFERENCES indicator(id),
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
+                        )
+                    """,
+                    """
+                    CREATE TABLE m30_data (
+                        id SERIAL PRIMARY KEY,
+                        indicator_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
+                        created_date TIMESTAMP NOT NULL,
+                        date_price TIMESTAMP,
+                        value json NULL,
+                        FOREIGN KEY (indicator_id) REFERENCES indicator(id),
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
+                        )
+                    """,
+                    """
+                    CREATE TABLE m60_data (
+                        id SERIAL PRIMARY KEY,
+                        indicator_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
+                        created_date TIMESTAMP NOT NULL,
+                        date_price TIMESTAMP,
+                        value json NULL,
+                        FOREIGN KEY (indicator_id) REFERENCES indicator(id),
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
+                        )
+                    """,
+                    """
+                    CREATE TABLE m240_data (
+                        id SERIAL PRIMARY KEY,
+                        indicator_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
+                        created_date TIMESTAMP NOT NULL,
+                        date_price TIMESTAMP,
+                        value json NULL,
+                        FOREIGN KEY (indicator_id) REFERENCES indicator(id),
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
+                        )
+                    """,
+                    """
                     CREATE TABLE daily_data (
                         id SERIAL PRIMARY KEY,
                         indicator_id INTEGER NOT NULL,

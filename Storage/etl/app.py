@@ -3,10 +3,13 @@ import subprocess
 
 from flask import Flask, request
 from flask_restful import Resource, Api
+
 import db_pack.alpaca.alpaca_daily as alpaca_daily
+import db_pack.alpaca.alpaca_minute as alpaca_minute
 import db_pack.alpaca.alpaca_symbol_loader as alpaca_symbol_loader
 
 import db_pack.oanda.oanda_daily as oanda_daily
+import db_pack.oanda.oanda_minute as oanda_minute
 import db_pack.oanda.oanda_symbol_loader as oanda_symbol_loader
 
 app = Flask(__name__)
@@ -29,6 +32,17 @@ class load_daily_data(Resource):
         elif vendor=='oanda':
             oanda_daily.main()
             return {'Success':'Oanda Daily Data Loaded'}
+
+
+class load_minute_data(Resource):
+    def get(self,vendor):
+        if vendor=='alpaca':
+            alpaca_minute.main()
+            return {'Success':'Alpaca Minute Data Loaded'}
+        elif vendor=='oanda':
+            oanda_minute.main()
+            return {'Success':'Oanda Minute Data Loaded'}
+
 class load_indicator_data(Resource):
     def get(self,vendor):
         cmd_str="""python q_pack/q_run/run_BT.py --todate='2020-03-31'"""
@@ -44,6 +58,7 @@ class test(Resource):
 
 api.add_resource(load_symbols,'/load_symbols/<string:vendor>')
 api.add_resource(load_daily_data,'/load_daily_data/<string:vendor>')
+api.add_resource(load_minute_data,'/load_minute_data/<string:vendor>')
 api.add_resource(load_indicator_data,'/load_indicator_data/<string:vendor>')
 api.add_resource(test,'/test/<string:vendor>')
 

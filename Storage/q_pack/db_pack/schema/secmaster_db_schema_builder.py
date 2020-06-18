@@ -122,7 +122,16 @@ def create_mkt_tables(db_credential_info):
                         volume BIGINT,
                         FOREIGN KEY (stock_id) REFERENCES symbol(id)
                         )      
-                    """)
+                    """,
+                    """
+                    create index on minute_data(date_price,stock_id)
+                    """,
+                    """
+                    create index on daily_data(date_price,stock_id)
+                    """,
+                    """
+                    create index on symbol(id))
+                    """)                    
         try:
             for command in commands:
                 print('Building tables.')

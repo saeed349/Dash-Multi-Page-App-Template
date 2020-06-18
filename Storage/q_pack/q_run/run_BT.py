@@ -76,9 +76,22 @@ def run(args=None):
         db_engine = create_engine('postgresql+psycopg2://'+db_cred.dbUser+':'+ db_cred.dbPWD +'@'+ db_cred.dbHost +'/'+ db_cred.dbName)
         conn = db_engine.connect()
         for ticker in ticker_list:
-            # data = bt_datafeed_postgres.PostgreSQL_Daily(dbHost=db_cred.dbHost,dbUser=db_cred.dbUser,dbPWD=db_cred.dbPWD,dbName=db_cred.dbName,ticker=ticker, name=ticker,**dkwargs)
-            data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs)
-            cerebro.adddata(data)
+            if args.timeframe == 'daily':
+                data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
+                cerebro.adddata(data)
+            elif args.timeframe == 'weekly':
+                data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
+                cerebro.resampledata(data,timeframe = bt.TimeFrame.Weekly, compression = 1)
+            elif args.timeframe == 'monthly':
+                data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
+                cerebro.resampledata(data,timeframe = bt.TimeFrame.Monthly, compression = 1)
+            elif args.timeframe == '1hour':
+                data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker)
+                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 60)
+            elif args.timeframe == '4hour':
+                data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker)
+                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 240)
+            # cerebro.adddata(data)
         # conn.close()
         db_engine.dispose()
         cerebro.broker.setcash(args.cash)
@@ -106,8 +119,13 @@ def parse_args(pargs=None):
         description=('Rebalancing with the Conservative Formula'),
     )
 
-    parser.add_argument('--tickers', nargs='*' ,required=False,default=['AAPL,MSFT'], type=str, #['EUR_USD,GBP_USD'] #['PZZA'] #['BOM500010,BOM500034,BOM500087']
+    # parser.add_argument('--tickers', nargs='*' ,required=False,default=['AAPL,MSFT'], type=str, #['EUR_USD,GBP_USD'] #['PZZA'] #['BOM500010,BOM500034,BOM500087']
+    #                     help='Pass the tickers with space')
+    parser.add_argument('--tickers', nargs='*' ,required=False,default=['EUR_USD,GBP_USD'], type=str,  #['PZZA'] #['BOM500010,BOM500034,BOM500087']
                         help='Pass the tickers with space')
+    
+    parser.add_argument('--timeframe', required=False, default='daily',
+                        help='Timeframe at whic the strategy needs to be run at')
 
     parser.add_argument('--dargs', default='',
                         metavar='kwargs', help='kwargs in k1=v1,k2=v2 format')
@@ -148,7 +166,7 @@ def parse_args(pargs=None):
     parser.add_argument('--load_indicator_db', required=False, default=True, type=args_parse_other.str2bool, const=True, nargs='?',
                     help='load the indicator data into DB')
 
-    parser.add_argument('--load_symbol', required=False, default=True, type=args_parse_other.str2bool, const=True, nargs='?',
+    parser.add_argument('--load_symbol', required=False, default=False, type=args_parse_other.str2bool, const=True, nargs='?',
                     help='load the symbols from excel file')
 
     return parser.parse_args(pargs)
