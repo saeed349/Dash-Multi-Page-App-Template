@@ -3,7 +3,7 @@ services:
     minio-image:
         container_name: minio-image
         build:
-            context: ./dockerfile_minio
+            context: ./dockerfiles/dockerfile_minio
         restart: always
         working_dir: "/minio-image/storage"
         volumes:
@@ -18,7 +18,7 @@ services:
     mlflow-image:
         container_name: "mlflow-image"
         build:
-            context: ./dockerfile_mlflowserver
+            context: ./dockerfiles/dockerfile_mlflowserver
         working_dir: "/mlflow-image"
         volumes:
             - ${WD}/mlflow:/mlflow-image
@@ -34,7 +34,7 @@ services:
     jupyter-image:
         container_name: "jupyter-image"
         build:
-            context: ./dockerfile_jupyter_notebook
+            context: ./dockerfiles/dockerfile_jupyter_notebook
         volumes:
             - ${WD}/notebooks:/home/jovyan/work
             - ${WD}/q_pack:/home/jovyan/work/q_pack
@@ -51,7 +51,7 @@ services:
     etl-image:
         container_name: "etl-image"
         build:
-            context: ./dockerfile_etl
+            context: ./dockerfiles/dockerfile_etl
         volumes:
             - ${WD}/etl:/app
             - ${WD}/q_pack:/app/q_pack
@@ -77,7 +77,7 @@ services:
     superset:
         container_name: "superset"
         build:
-            context: ./dockerfile_superset
+            context: ./dockerfiles/dockerfile_superset
         restart: always
         depends_on:
             - redis
@@ -130,7 +130,7 @@ services:
         image: airflow
         container_name: "my_airflow"
         build:
-            context: ./dockerfile_airflow
+            context: ./dockerfiles/dockerfile_airflow
         restart: always
         depends_on:
             - postgres

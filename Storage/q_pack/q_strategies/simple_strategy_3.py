@@ -106,7 +106,7 @@ class St(bt.Strategy):
             dt, dn = self.datetime.datetime(), d._name
             pos = self.getposition(d).size
             order_valid = datetime.timedelta(self.p.limdays)
-            # print(bt.num2date(d.datetime[0]),'--Open:',d.open[0],' High:',d.high[0],' Low:',d.low[0],' Close:',d.close[0])
+            # print(d._name,'--time:',bt.num2date(d.datetime[0]),'--Open:',d.open[0],' High:',d.high[0],' Low:',d.low[0],' Close:',d.close[0])
             if self.datastatus and pos==0:
                 # print(dn)
                 # print(self.level_ind[i].Level[0])

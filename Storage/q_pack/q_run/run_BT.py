@@ -20,7 +20,6 @@ import q_analyzers.bt_strat_perform_analyzer as bt_strat_performance_analyzer
 import q_analyzers.bt_pos_perform_analyzer as bt_pos_performance_analyzer
 import q_analyzers.bt_transaction_analyzer as bt_trans_analyzer
 import q_analyzers.bt_strategy_id_analyzer as bt_strategy_id_analyzer
-# import q_analyzers.bt_logger_analyzer as bt_logger_analyzer
 import q_analyzers.bt_logger_analyzer as bt_logger_analyzer
 import q_tools.args_parse_other as args_parse_other
 import q_analyzers.bt_indicator_analyzer as bt_indicator_analyzer
@@ -75,6 +74,7 @@ def run(args=None):
     elif args.mode=='backtest':
         db_engine = create_engine('postgresql+psycopg2://'+db_cred.dbUser+':'+ db_cred.dbPWD +'@'+ db_cred.dbHost +'/'+ db_cred.dbName)
         conn = db_engine.connect()
+        print(dkwargs)
         for ticker in ticker_list:
             if args.timeframe == 'daily':
                 data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
@@ -86,11 +86,11 @@ def run(args=None):
                 data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
                 cerebro.resampledata(data,timeframe = bt.TimeFrame.Monthly, compression = 1)
             elif args.timeframe == '1hour':
-                data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker)
-                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 60)
+                data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker,**dkwargs)   
+                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 60,rightedge=False)
             elif args.timeframe == '4hour':
-                data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker)
-                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 240)
+                data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker,**dkwargs)
+                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 240,rightedge=False)
         db_engine.dispose()
         cerebro.broker.setcash(args.cash)
         cerebro.addstrategy(globals()[args.strat_name].St, **args.strat_param)
@@ -119,7 +119,7 @@ def parse_args(pargs=None):
 
     # parser.add_argument('--tickers', nargs='*' ,required=False,default=['AAPL,MSFT'], type=str, #['EUR_USD,GBP_USD'] #['PZZA'] #['BOM500010,BOM500034,BOM500087']
     #                     help='Pass the tickers with space')
-    parser.add_argument('--tickers', nargs='*' ,required=False,default=['EUR_USD,GBP_USD'], type=str,  #['PZZA'] #['BOM500010,BOM500034,BOM500087']
+    parser.add_argument('--tickers', nargs='*' ,required=False,default=['EUR_USD'], type=str,  #['PZZA'] #['BOM500010,BOM500034,BOM500087']
                         help='Pass the tickers with space')
     
     parser.add_argument('--timeframe', required=False, default='daily',
@@ -131,7 +131,7 @@ def parse_args(pargs=None):
     parser.add_argument('--fromdate', required=False, default='2015-7-1',
                         help='Date[time] in YYYY-MM-DD[THH:MM:SS] format')
 
-    parser.add_argument('--todate', required=False, default='2019-05-01',
+    parser.add_argument('--todate', required=False, default='',
                         help='Date[time] in YYYY-MM-DD[THH:MM:SS] format')
 
     parser.add_argument('--cerebro', required=False, default='',
@@ -173,3 +173,5 @@ def parse_args(pargs=None):
 if __name__ == '__main__':
     run()
 
+
+# python q_pack/q_run/run_BT.py --fromdate='2020-01-01' --todate='2020-06-01' --timeframe='1hour' --strat_param "use_level=yes,use_db=yes,ml_serving=no"

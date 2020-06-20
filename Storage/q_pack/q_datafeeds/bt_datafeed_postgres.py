@@ -19,7 +19,6 @@ class PostgreSQL_Daily(DataBase):
     def start(self):
         sql = "select a.date_price date, a.open_price open, a.high_price high, a.low_price low, a.close_price as close, a.volume from daily_data a inner join symbol b on a.stock_id = b.id where b.ticker='"+ self.p.ticker + "' and a.date_price between '"+self.p.fromdate.strftime("%Y-%m-%d")+"' and '"+self.p.todate.strftime("%Y-%m-%d")+"' order by date ASC"
         self.result = self.p.conn.execute(sql)
- 
 
     def _load(self):
         one_row = self.result.fetchone()

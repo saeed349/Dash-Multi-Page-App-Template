@@ -19,7 +19,7 @@ Future work:
     * DB Table
  - Add Date Range in interested_tickers.csv
 """
-
+import argparse
 import datetime
 import psycopg2
 import pandas as pd
@@ -34,6 +34,9 @@ import q_credentials.db_secmaster_cred as db_secmaster_cred
 import q_credentials.oanda_cred as oanda_cred
 import q_tools.read_db as read_db
 import q_tools.write_db as write_db
+
+from dateutil import parser
+import pytz
 
 MASTER_LIST_FAILED_SYMBOLS = []
 
@@ -51,16 +54,19 @@ def load_data(symbol, symbol_id, conn, start_date):
     """
     client = oandapyV20.API(access_token=oanda_cred.token_practice)
     cur = conn.cursor()
-    end_dt = datetime.datetime.now()
-    if end_dt.isoweekday() in set((6, 7)): # to take the nearest weekday
-        end_dt -= datetime.timedelta(days=end_dt.isoweekday() % 5)
+    end_date = datetime.datetime.now()
+    if end_date.isoweekday() in set((6, 7)): # to take the nearest weekday
+        end_date -= datetime.timedelta(days=end_date.isoweekday() % 5)
     
-    try:
-        data = oanda_historical_data(instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=end_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
-    except:
-        print("exception")
-        MASTER_LIST_FAILED_SYMBOLS.append(symbol)
-        raise Exception('Failed to load {}'.format(symbol))
+    print(start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    # try:
+    data = oanda_historical_data(instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=end_date.strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
+    # est_timezone = pytz.timezone("America/New_York")
+    # data = oanda_historical_data(instrument=symbol,start_date=est_timezone.localize(start_date).strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=est_timezone.localize(end_date).strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
+    # except:
+    #     print("exception")
+    #     MASTER_LIST_FAILED_SYMBOLS.append(symbol)
+    #     raise Exception('Failed to load {}'.format(symbol))
 
     if data.empty:
         print(symbol," already updated")
@@ -128,8 +134,9 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='M1',client
     df_full.index=pd.to_datetime(df_full.index)    
     return df_full
 
-def main():
-    initial_start_date = datetime.datetime(2019,12,30)
+def main(args=None):
+    args = parse_args(args)
+    initial_start_date = datetime.datetime.strptime(args.fromdate,'%Y-%m-%d')
     
     db_host=db_secmaster_cred.dbHost 
     db_user=db_secmaster_cred.dbUser
@@ -159,7 +166,7 @@ def main():
             group by stock_id) a right join symbol b on a.stock_id = b.id 
             where b.ticker in {} and b.data_vendor_id={}""".format(str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
         df_ticker_last_day=pd.read_sql(sql,con=conn)
-
+        df_ticker_last_day.to_csv('minute_test.csv')
         # Filling the empty dates returned from the DB with the initial start date
         df_ticker_last_day['last_date'].fillna(initial_start_date,inplace=True)
 
@@ -169,19 +176,18 @@ def main():
         startTime = datetime.datetime.now()
 
         print (datetime.datetime.now() - startTime)
-        print(sql)
         print(df_ticker_last_day)
         for i,stock in df_ticker_last_day.iterrows() :
             # download stock data and dump into daily_data table in our Postgres DB
             last_date = stock['last_date']
             symbol_id = stock['stock_id']
             symbol = stock['ticker']
-            try:
-                print(symbol)
-                load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date)
-            except:
-                print("exception")
-                continue
+            # try:
+            print(symbol)
+            load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date)
+            # except:
+            #     print("exception")
+            #     continue
 
         # lets write our failed stock list to text file for reference
         file_to_write = open('failed_symbols_oanda.txt', 'w')
@@ -191,6 +197,15 @@ def main():
 
         print(datetime.datetime.now() - startTime)
     
+def parse_args(pargs=None):
+    parser = argparse.ArgumentParser(   
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=('Rebalancing with the Conservative Formula'),
+    )
+    parser.add_argument('--fromdate', required=False, default='6-1-2020',#default=datetime.datetime(2020,6,14),
+                        help='Date[time] in YYYY-MM-DD[THH:MM:SS] format')
+
+    return parser.parse_args(pargs)
 
 if __name__ == "__main__":
     main()
