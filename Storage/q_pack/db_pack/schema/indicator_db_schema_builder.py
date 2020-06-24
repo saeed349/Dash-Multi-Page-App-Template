@@ -46,7 +46,7 @@ def check_db_exists(db_credential_info):
         print('Database exists.')
         return True
     except:
-        print("Database does not exist.")
+        print("Indicator Database does not exist.")
         return False
 
        
@@ -132,7 +132,7 @@ def create_mkt_tables(db_credential_info):
                         )
                     """,
                     """
-                    CREATE TABLE m60_data (
+                    CREATE TABLE h1_data (
                         id SERIAL PRIMARY KEY,
                         indicator_id INTEGER NOT NULL,
                         symbol_id INTEGER NOT NULL,
@@ -144,7 +144,7 @@ def create_mkt_tables(db_credential_info):
                         )
                     """,
                     """
-                    CREATE TABLE m240_data (
+                    CREATE TABLE h4_data (
                         id SERIAL PRIMARY KEY,
                         indicator_id INTEGER NOT NULL,
                         symbol_id INTEGER NOT NULL,
@@ -156,7 +156,7 @@ def create_mkt_tables(db_credential_info):
                         )
                     """,
                     """
-                    CREATE TABLE daily_data (
+                    CREATE TABLE d_data (
                         id SERIAL PRIMARY KEY,
                         indicator_id INTEGER NOT NULL,
                         symbol_id INTEGER NOT NULL,
@@ -168,7 +168,7 @@ def create_mkt_tables(db_credential_info):
                         )
                     """,
                     """
-                    CREATE TABLE weekly_data (
+                    CREATE TABLE w_data (
                         id SERIAL PRIMARY KEY,
                         indicator_id INTEGER NOT NULL,
                         symbol_id INTEGER NOT NULL,
@@ -180,7 +180,7 @@ def create_mkt_tables(db_credential_info):
                         )
                     """,
                     """
-                    CREATE TABLE monthly_data (
+                    CREATE TABLE m_data (
                         id SERIAL PRIMARY KEY,
                         indicator_id INTEGER NOT NULL,
                         symbol_id INTEGER NOT NULL,

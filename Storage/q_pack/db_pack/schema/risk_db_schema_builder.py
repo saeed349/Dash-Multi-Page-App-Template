@@ -42,7 +42,7 @@ def check_db_exists(db_credential_info):
         print('Database exists.')
         return True
     except:
-        print("Database does not exist.")
+        print("Risk Database does not exist.")
         return False
 
        

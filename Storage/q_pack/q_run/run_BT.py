@@ -41,6 +41,7 @@ def run(args=None):
         ticker_list = list(df['Tickers'])
     else:
         ticker_list=args.tickers[0].split(',')
+        print(ticker_list)
 
     dtfmt, tmfmt = '%Y-%m-%d', 'T%H:%M:%S'
     if args.fromdate:
@@ -76,26 +77,28 @@ def run(args=None):
         conn = db_engine.connect()
         print(dkwargs)
         for ticker in ticker_list:
-            if args.timeframe == 'daily':
+            if args.timeframe == 'd':
                 data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
                 cerebro.adddata(data)
-            elif args.timeframe == 'weekly':
+            elif args.timeframe == 'w':
                 data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
                 cerebro.resampledata(data,timeframe = bt.TimeFrame.Weekly, compression = 1)
-            elif args.timeframe == 'monthly':
+            elif args.timeframe == 'm':
                 data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
                 cerebro.resampledata(data,timeframe = bt.TimeFrame.Monthly, compression = 1)
-            elif args.timeframe == '1hour':
+            elif args.timeframe == 'h1':
                 data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker,**dkwargs)   
-                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 60,rightedge=False)
-            elif args.timeframe == '4hour':
-                data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker,**dkwargs)
-                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 240,rightedge=False)
+                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 60,adjbartime=False)
+            elif args.timeframe == 'h4':
+                data = bt_datafeed_postgres.PostgreSQL_Historical(db=args.timeframe, conn=conn,ticker=ticker, name=ticker,**dkwargs,timeframe=bt.TimeFrame.Minutes, compression=240)
+                # data = bt_datafeed_postgres.PostgreSQL_Historical(db=args.timeframe, conn=conn,ticker=ticker, name=ticker,**dkwargs)
+                cerebro.adddata(data)
+                # data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker,**dkwargs)
+                # cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 240,rightedge=False)
         db_engine.dispose()
         cerebro.broker.setcash(args.cash)
         cerebro.addstrategy(globals()[args.strat_name].St, **args.strat_param)
  
-    
 
     cerebro.addsizer(bt.sizers.FixedSize, stake=1000)
 
@@ -119,7 +122,7 @@ def parse_args(pargs=None):
 
     # parser.add_argument('--tickers', nargs='*' ,required=False,default=['AAPL,MSFT'], type=str, #['EUR_USD,GBP_USD'] #['PZZA'] #['BOM500010,BOM500034,BOM500087']
     #                     help='Pass the tickers with space')
-    parser.add_argument('--tickers', nargs='*' ,required=False,default=['EUR_USD'], type=str,  #['PZZA'] #['BOM500010,BOM500034,BOM500087']
+    parser.add_argument('--tickers', nargs='*' ,required=False,default=['EUR_USD,GBP_USD'], type=str,  #['PZZA'] #['BOM500010,BOM500034,BOM500087']
                         help='Pass the tickers with space')
     
     parser.add_argument('--timeframe', required=False, default='daily',

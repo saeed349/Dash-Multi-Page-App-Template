@@ -38,7 +38,7 @@ import q_tools.write_db as write_db
 MASTER_LIST_FAILED_SYMBOLS = []
 
 
-def load_data(symbol, symbol_id, conn, start_date):
+def load_data(symbol, symbol_id, conn, start_date,freq):
     """
     This will load stock data (date+OHLCV) and additional info to our daily_data table.
     args:
@@ -51,17 +51,17 @@ def load_data(symbol, symbol_id, conn, start_date):
     """
     client = oandapyV20.API(access_token=oanda_cred.token_practice)
     cur = conn.cursor()
-    end_dt = datetime.datetime.now()
-    if end_dt.isoweekday() in set((6, 7)): # to take the nearest weekday
-        end_dt -= datetime.timedelta(days=end_dt.isoweekday() % 5)
-    
-    try:
-        data = oanda_historical_data(instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=end_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
-    except:
-        print("exception")
-        MASTER_LIST_FAILED_SYMBOLS.append(symbol)
-        raise Exception('Failed to load {}'.format(symbol))
+    end_date = datetime.datetime.now()
+    if end_date.isoweekday() in set((6, 7)): # to take the nearest weekday
+        end_date -= datetime.timedelta(days=end_date.isoweekday() % 5)
 
+    print(start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
+    # try:
+    data = oanda_historical_data(granularity=freq.upper(),instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=end_date.strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
+    # except:
+        # print("exception")
+        # MASTER_LIST_FAILED_SYMBOLS.append(symbol)
+        # raise Exception('Failed to load {}'.format(symbol))
     if data.empty:
         print(symbol," already updated")
 
@@ -76,7 +76,10 @@ def load_data(symbol, symbol_id, conn, start_date):
         # because the timestamp is the beginning of the candle (that is the open) and the close would be at 2020-01-10T22:00:00.000000000Z and therefore we need
         # to add a couple of hours so that it would be the next day and then we can extract the date to reflect the exact date.  This is not at all a neat way of 
         # doing it. Need to deal with timezone and should set timezone rules for consuming the data into the db.
-        newDF['date_price'] =  (data.index+pd.DateOffset(hours=3)).date
+        if freq=='d':
+            newDF['date_price'] =  (data.index+pd.DateOffset(hours=3)).date
+        else:
+            newDF['date_price'] =  data.index
         data.reset_index(drop=True,inplace=True)
         newDF['open_price'] = data['open']
         newDF['high_price'] = data['high']
@@ -94,8 +97,8 @@ def load_data(symbol, symbol_id, conn, start_date):
         print(newDF['date_price'].min())
         print(newDF['date_price'].max())
         print("")
-
-        write_db.write_db_dataframe(df=newDF, conn=conn, table='daily_data') 
+        newDF=newDF[:-1] # so that it leaves out the last incomplete candle
+        write_db.write_db_dataframe(df=newDF, conn=conn, table=(freq+'_data')) 
         print('{} complete!'.format(symbol))
 
 
@@ -106,7 +109,7 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='D',client=
     "granularity": granularity
     ,"count": 2500,
     }
-
+    print(params)
     df_full=pd.DataFrame()
     for r in InstrumentsCandlesFactory(instrument=instrument,params=params):
         client.request(r)
@@ -124,10 +127,13 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='D',client=
             else:
                 df_full=df_full.append(df)
     df_full.index=pd.to_datetime(df_full.index)    
+    print(len(df_full))
     return df_full
 
-def main():
-    initial_start_date = datetime.datetime(2015,12,30)
+def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
+    if type(initial_start_date)==str:
+        datetime.datetime.strptime(initial_start_date, "%m-%d-%Y")
+    # initial_start_date = datetime.datetime(2015,12,30)
     
     db_host=db_secmaster_cred.dbHost 
     db_user=db_secmaster_cred.dbUser
@@ -145,7 +151,7 @@ def main():
     Bucket="airflow-files"
     Key="interested_tickers_oanda.xlsx"
     read_file = s3.get_object(Bucket=Bucket, Key=Key)
-    df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
+    df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name=freq)
 
     if df_tickers.empty:
         print("Empty Ticker List")
@@ -153,17 +159,20 @@ def main():
         # Getting the last date for each interested tickers
         sql="""select a.last_date, b.id as stock_id, b.ticker from
             (select max(date_price) as last_date, stock_id
-            from daily_data 
+            from {}_data 
             group by stock_id) a right join symbol b on a.stock_id = b.id 
-            where b.ticker in {} and b.data_vendor_id={}""".format(str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
+            where b.ticker in {} and b.data_vendor_id={}""".format(freq,str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
         df_ticker_last_day=pd.read_sql(sql,con=conn)
 
         # Filling the empty dates returned from the DB with the initial start date
         df_ticker_last_day['last_date'].fillna(initial_start_date,inplace=True)
 
         # Adding 1 day, so that the data is appended starting next date
-        df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(days=1)
-        
+        if freq=='d':
+            df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(days=1)
+        else:
+            df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(minutes=1)
+
         startTime = datetime.datetime.now()
 
         print (datetime.datetime.now() - startTime)
@@ -174,12 +183,12 @@ def main():
             last_date = stock['last_date']
             symbol_id = stock['stock_id']
             symbol = stock['ticker']
-            try:
-                print(symbol)
-                load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date)
-            except:
-                print("exception")
-                continue
+            # try:
+            print(symbol)
+            load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date, freq=freq)
+            # except:
+            #     print("exception")
+            #     continue
 
         # lets write our failed stock list to text file for reference
         file_to_write = open('failed_symbols_oanda.txt', 'w')
@@ -188,7 +197,5 @@ def main():
             file_to_write.write("%s\n" % symbol)
 
         print(datetime.datetime.now() - startTime)
-    
-
 if __name__ == "__main__":
     main()

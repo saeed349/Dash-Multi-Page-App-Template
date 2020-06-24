@@ -55,6 +55,7 @@ def load_data(symbol, symbol_id, conn, start_date):
     client = oandapyV20.API(access_token=oanda_cred.token_practice)
     cur = conn.cursor()
     end_date = datetime.datetime.now()
+    print(end_date)
     if end_date.isoweekday() in set((6, 7)): # to take the nearest weekday
         end_date -= datetime.timedelta(days=end_date.isoweekday() % 5)
     

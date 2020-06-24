@@ -13,10 +13,10 @@ import q_credentials.db_indicator_cred as db_indicator_cred
 import q_tools.write_db as write_db
 import q_tools.read_db as read_db
 
-tframes = {4:'minute',#bt.TimeFrame.Minutes
-            5:'daily',
-            6:'weekly',
-            7:'monthly'}#bt.TimeFrame.Months
+tframes = {4:'m',#bt.TimeFrame.Minutes
+            5:'d',
+            6:'w',
+            7:'m'}#bt.TimeFrame.Months
                 
 class indicator_analyzer(bt.Analyzer):
 
@@ -56,7 +56,7 @@ class indicator_analyzer(bt.Analyzer):
                     ind_df=pd.DataFrame(final_dict.items(),columns=['date_price','value']) 
                     time_frame=tframes[d._timeframe]
                     if d._timeframe == 4:
-                        time_frame = 'm'+str(d._compression)
+                        time_frame = 'h'+str(int(d._compression/60))
                     # print(d._timeframe,d._compression,time_frame)
                     write_to_ind_db(sec_name, ind_name,ind_df, time_frame,self.conn_indicator)
 

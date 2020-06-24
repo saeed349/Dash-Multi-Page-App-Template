@@ -46,7 +46,7 @@ def check_db_exists(db_credential_info):
         print('Database exists.')
         return True
     except:
-        print("Database does not exist.")
+        print("Secmaster Database does not exist.")
         return False
 
        
@@ -94,7 +94,7 @@ def create_mkt_tables(db_credential_info):
                         )
                     """,
                     """
-                    CREATE TABLE daily_data (
+                    CREATE TABLE m1_data (
                         id SERIAL PRIMARY KEY,
                         stock_id INTEGER NOT NULL,
                         created_date TIMESTAMP NOT NULL,
@@ -109,7 +109,7 @@ def create_mkt_tables(db_credential_info):
                         )
                     """,
                     """
-                     CREATE TABLE minute_data (
+                     CREATE TABLE h1_data (
                         id SERIAL PRIMARY KEY,
                         stock_id INTEGER NOT NULL,
                         created_date TIMESTAMP NOT NULL,
@@ -124,13 +124,49 @@ def create_mkt_tables(db_credential_info):
                         )      
                     """,
                     """
-                    create index on minute_data(date_price,stock_id)
+                     CREATE TABLE h4_data (
+                        id SERIAL PRIMARY KEY,
+                        stock_id INTEGER NOT NULL,
+                        created_date TIMESTAMP NOT NULL,
+                        last_updated_date TIMESTAMP NOT NULL,
+                        date_price TIMESTAMP,
+                        open_price NUMERIC,
+                        high_price NUMERIC,
+                        low_price NUMERIC,
+                        close_price NUMERIC,
+                        volume BIGINT,
+                        FOREIGN KEY (stock_id) REFERENCES symbol(id)
+                        )      
                     """,
                     """
-                    create index on daily_data(date_price,stock_id)
+                     CREATE TABLE d_data (
+                        id SERIAL PRIMARY KEY,
+                        stock_id INTEGER NOT NULL,
+                        created_date TIMESTAMP NOT NULL,
+                        last_updated_date TIMESTAMP NOT NULL,
+                        date_price TIMESTAMP,
+                        open_price NUMERIC,
+                        high_price NUMERIC,
+                        low_price NUMERIC,
+                        close_price NUMERIC,
+                        volume BIGINT,
+                        FOREIGN KEY (stock_id) REFERENCES symbol(id)
+                        )      
                     """,
                     """
-                    create index on symbol(id))
+                    create index on m1_data(date_price,stock_id)
+                    """,
+                    """
+                    create index on h1_data(date_price,stock_id)
+                    """,
+                    """
+                    create index on h4_data(date_price,stock_id)
+                    """,
+                    """
+                    create index on d_data(date_price,stock_id)
+                    """,
+                    """
+                    create index on symbol(id)
                     """)                    
         try:
             for command in commands:
