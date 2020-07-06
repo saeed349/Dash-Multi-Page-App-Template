@@ -57,7 +57,7 @@ class St(bt.Strategy):
             i.aliased='anomaly'
 
         if self.p.use_level=='yes':
-            print("using level indicator")
+            # print("using level indicator")
             self.level_ind = [Level_Indicator.Level_Indicator(d,disp=True,use_db=True if self.p.use_db=='yes' else False) for d in self.datas]
             for i in self.level_ind:
                 i.aliased='level'

@@ -62,8 +62,8 @@ class indicator_analyzer(bt.Analyzer):
 
 
 def write_to_ind_db(sec_name, ind_name, ind_df, time_frame,conn_indicator, period=0):
-    if ind_name=='level':
-        print("level is here")
+    # if ind_name=='level':
+    #     print("Level data is being recorded")
     sql="SELECT id FROM symbol WHERE ticker = '"+sec_name+"'"
     symbol_id=read_db.read_db_single(sql,conn_indicator)
     sql="SELECT id FROM indicator WHERE name = '"+ind_name+"'"

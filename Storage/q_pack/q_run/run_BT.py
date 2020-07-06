@@ -35,9 +35,9 @@ def run(args=None):
     if args.load_symbol:
         s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
         Bucket="airflow-files"
-        Key="interested_tickers_alpaca.xlsx"
+        Key="interested_tickers_oanda.xlsx"
         read_file = s3.get_object(Bucket=Bucket, Key=Key)
-        df = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
+        df = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="d")
         ticker_list = list(df['Tickers'])
     else:
         ticker_list=args.tickers[0].split(',')
@@ -78,23 +78,21 @@ def run(args=None):
         print(dkwargs)
         for ticker in ticker_list:
             if args.timeframe == 'd':
-                data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
+                data = bt_datafeed_postgres.PostgreSQL_Historical(db=args.timeframe, conn=conn,ticker=ticker, name=ticker,**dkwargs) 
                 cerebro.adddata(data)
             elif args.timeframe == 'w':
-                data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
-                cerebro.resampledata(data,timeframe = bt.TimeFrame.Weekly, compression = 1)
+                data = bt_datafeed_postgres.PostgreSQL_Historical(db='d', conn=conn,ticker=ticker, name=ticker,**dkwargs) 
+                cerebro.resampledata(data,timeframe = bt.TimeFrame.Weeks, compression = 1)
             elif args.timeframe == 'm':
-                data = bt_datafeed_postgres.PostgreSQL_Daily(conn=conn,ticker=ticker, name=ticker,**dkwargs) 
-                cerebro.resampledata(data,timeframe = bt.TimeFrame.Monthly, compression = 1)
+                data = bt_datafeed_postgres.PostgreSQL_Historical(db='d', conn=conn,ticker=ticker, name=ticker,**dkwargs) 
+                cerebro.resampledata(data,timeframe = bt.TimeFrame.Months, compression = 1)
             elif args.timeframe == 'h1':
-                data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker,**dkwargs)   
-                cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 60,adjbartime=False)
+                data = bt_datafeed_postgres.PostgreSQL_Historical(db=args.timeframe, conn=conn,ticker=ticker, name=ticker,**dkwargs,timeframe=bt.TimeFrame.Minutes, compression=60) 
+                cerebro.adddata(data)
             elif args.timeframe == 'h4':
                 data = bt_datafeed_postgres.PostgreSQL_Historical(db=args.timeframe, conn=conn,ticker=ticker, name=ticker,**dkwargs,timeframe=bt.TimeFrame.Minutes, compression=240)
-                # data = bt_datafeed_postgres.PostgreSQL_Historical(db=args.timeframe, conn=conn,ticker=ticker, name=ticker,**dkwargs)
                 cerebro.adddata(data)
-                # data = bt_datafeed_postgres.PostgreSQL_Minute(conn=conn,ticker=ticker, name=ticker,**dkwargs)
-                # cerebro.resampledata(data,timeframe = bt.TimeFrame.Minutes, compression = 240,rightedge=False)
+    
         db_engine.dispose()
         cerebro.broker.setcash(args.cash)
         cerebro.addstrategy(globals()[args.strat_name].St, **args.strat_param)

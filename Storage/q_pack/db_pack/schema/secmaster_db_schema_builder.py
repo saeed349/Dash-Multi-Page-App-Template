@@ -96,7 +96,7 @@ def create_mkt_tables(db_credential_info):
                     """
                     CREATE TABLE m1_data (
                         id SERIAL PRIMARY KEY,
-                        stock_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
                         created_date TIMESTAMP NOT NULL,
                         last_updated_date TIMESTAMP NOT NULL,
                         date_price TIMESTAMP,
@@ -105,13 +105,13 @@ def create_mkt_tables(db_credential_info):
                         low_price NUMERIC,
                         close_price NUMERIC,
                         volume BIGINT,
-                        FOREIGN KEY (stock_id) REFERENCES symbol(id)
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
                         )
                     """,
                     """
                      CREATE TABLE h1_data (
                         id SERIAL PRIMARY KEY,
-                        stock_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
                         created_date TIMESTAMP NOT NULL,
                         last_updated_date TIMESTAMP NOT NULL,
                         date_price TIMESTAMP,
@@ -120,13 +120,13 @@ def create_mkt_tables(db_credential_info):
                         low_price NUMERIC,
                         close_price NUMERIC,
                         volume BIGINT,
-                        FOREIGN KEY (stock_id) REFERENCES symbol(id)
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
                         )      
                     """,
                     """
                      CREATE TABLE h4_data (
                         id SERIAL PRIMARY KEY,
-                        stock_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
                         created_date TIMESTAMP NOT NULL,
                         last_updated_date TIMESTAMP NOT NULL,
                         date_price TIMESTAMP,
@@ -135,13 +135,13 @@ def create_mkt_tables(db_credential_info):
                         low_price NUMERIC,
                         close_price NUMERIC,
                         volume BIGINT,
-                        FOREIGN KEY (stock_id) REFERENCES symbol(id)
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
                         )      
                     """,
                     """
                      CREATE TABLE d_data (
                         id SERIAL PRIMARY KEY,
-                        stock_id INTEGER NOT NULL,
+                        symbol_id INTEGER NOT NULL,
                         created_date TIMESTAMP NOT NULL,
                         last_updated_date TIMESTAMP NOT NULL,
                         date_price TIMESTAMP,
@@ -150,20 +150,20 @@ def create_mkt_tables(db_credential_info):
                         low_price NUMERIC,
                         close_price NUMERIC,
                         volume BIGINT,
-                        FOREIGN KEY (stock_id) REFERENCES symbol(id)
+                        FOREIGN KEY (symbol_id) REFERENCES symbol(id)
                         )      
                     """,
                     """
-                    create index on m1_data(date_price,stock_id)
+                    create index on m1_data(date_price,symbol_id)
                     """,
                     """
-                    create index on h1_data(date_price,stock_id)
+                    create index on h1_data(date_price,symbol_id)
                     """,
                     """
-                    create index on h4_data(date_price,stock_id)
+                    create index on h4_data(date_price,symbol_id)
                     """,
                     """
-                    create index on d_data(date_price,stock_id)
+                    create index on d_data(date_price,symbol_id)
                     """,
                     """
                     create index on symbol(id)

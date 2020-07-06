@@ -107,6 +107,7 @@ services:
         image: dpage/pgadmin4
         container_name: "pgadmin"
         environment:
+            # MASTER_PASSWORD_REQUIRED: "False"
             PGADMIN_DEFAULT_EMAIL: "guest"
             PGADMIN_DEFAULT_PASSWORD: "guest"
         volumes:

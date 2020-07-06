@@ -68,7 +68,7 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
     else:        
         # create new dataframe matching our table schema
         # and re-arrange our dataframe to match our database table
-        columns_table_order = ['stock_id', 'created_date', 
+        columns_table_order = ['symbol_id', 'created_date', 
                                'last_updated_date', 'date_price', 'open_price',
                                'high_price', 'low_price', 'close_price', 'volume']
         newDF = pd.DataFrame()
@@ -78,26 +78,34 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
         # doing it. Need to deal with timezone and should set timezone rules for consuming the data into the db.
         if freq=='d':
             newDF['date_price'] =  (data.index+pd.DateOffset(hours=3)).date
+            date_diff = datetime.datetime.utcnow().date()-newDF['date_price'].max()
         else:
             newDF['date_price'] =  data.index
+            date_diff = datetime.datetime.utcnow().date()-newDF['date_price'].max().date()
         data.reset_index(drop=True,inplace=True)
         newDF['open_price'] = data['open']
         newDF['high_price'] = data['high']
         newDF['low_price'] = data['low']
         newDF['close_price'] = data['close']
         newDF['volume'] = data['volume']
-        newDF['stock_id'] = symbol_id
+        newDF['symbol_id'] = symbol_id
         newDF['created_date'] = datetime.datetime.utcnow()
         newDF['last_updated_date'] = datetime.datetime.utcnow()
         newDF = newDF[columns_table_order]
         # ensure our data is sorted by date
         newDF = newDF.sort_values(by=['date_price'], ascending = True)
 
-        print(newDF['stock_id'].unique())
+        print(newDF['symbol_id'].unique())
         print(newDF['date_price'].min())
         print(newDF['date_price'].max())
         print("")
-        newDF=newDF[:-1] # so that it leaves out the last incomplete candle
+        # so that it leaves out the last incomplete candle 
+        # the problem is that, this is an edge case. On Saturday or Sunday, this would only record till Thursday, so we are missing Friday. 
+        # same situation for Weekly as well, that week wont be recorded till Monday till we have new incomplete data. Same goes for monthly as well. 
+        # Right now I am checking if the last candle and the current time has a difference of more than 1 day. This will solve for the edge condition when we are running when the market closes on Friday but only if we are running the data load script on Saturday. 
+        if date_diff.days < 1:
+            newDF=newDF[:-1]
+
         write_db.write_db_dataframe(df=newDF, conn=conn, table=(freq+'_data')) 
         print('{} complete!'.format(symbol))
 
@@ -127,7 +135,6 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='D',client=
             else:
                 df_full=df_full.append(df)
     df_full.index=pd.to_datetime(df_full.index)    
-    print(len(df_full))
     return df_full
 
 def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
@@ -157,10 +164,10 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
         print("Empty Ticker List")
     else:
         # Getting the last date for each interested tickers
-        sql="""select a.last_date, b.id as stock_id, b.ticker from
-            (select max(date_price) as last_date, stock_id
+        sql="""select a.last_date, b.id as symbol_id, b.ticker from
+            (select max(date_price) as last_date, symbol_id
             from {}_data 
-            group by stock_id) a right join symbol b on a.stock_id = b.id 
+            group by symbol_id) a right join symbol b on a.symbol_id = b.id 
             where b.ticker in {} and b.data_vendor_id={}""".format(freq,str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
         df_ticker_last_day=pd.read_sql(sql,con=conn)
 
@@ -176,12 +183,11 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
         startTime = datetime.datetime.now()
 
         print (datetime.datetime.now() - startTime)
-        print(sql)
         print(df_ticker_last_day)
         for i,stock in df_ticker_last_day.iterrows() :
             # download stock data and dump into daily_data table in our Postgres DB
             last_date = stock['last_date']
-            symbol_id = stock['stock_id']
+            symbol_id = stock['symbol_id']
             symbol = stock['ticker']
             # try:
             print(symbol)
