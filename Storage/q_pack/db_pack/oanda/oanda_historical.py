@@ -26,6 +26,7 @@ import pandas as pd
 import os
 import io
 import boto3
+import pytz
 
 from oandapyV20.contrib.factories import InstrumentsCandlesFactory
 import oandapyV20.endpoints.accounts as accounts
@@ -103,9 +104,12 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
         # the problem is that, this is an edge case. On Saturday or Sunday, this would only record till Thursday, so we are missing Friday. 
         # same situation for Weekly as well, that week wont be recorded till Monday till we have new incomplete data. Same goes for monthly as well. 
         # Right now I am checking if the last candle and the current time has a difference of more than 1 day. This will solve for the edge condition when we are running when the market closes on Friday but only if we are running the data load script on Saturday. 
+        print(date_diff.days)
+        newDF=newDF[newDF['date_price']>pytz.utc.localize(start_date)] ## added 7/7/2020 10 PM
+        newDF.to_csv("before_new_test.csv")
         if date_diff.days < 1:
             newDF=newDF[:-1]
-
+        newDF.to_csv("new_test.csv")
         write_db.write_db_dataframe(df=newDF, conn=conn, table=(freq+'_data')) 
         print('{} complete!'.format(symbol))
 
@@ -126,7 +130,6 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='D',client=
         if(api_data):
             for oo in r.response.get('candles'):
                 dat.append([oo['time'], oo['volume'], oo['mid']['o'], oo['mid']['h'], oo['mid']['l'], oo['mid']['c']])
-
             df = pd.DataFrame(dat)
             df.columns = ['time', 'volume', 'open', 'high', 'low', 'close']
             df = df.set_index('time')
