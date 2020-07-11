@@ -3,16 +3,9 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.operators.bash_operator import BashOperator
 from airflow.contrib.sensors.file_sensor import FileSensor
 from datetime import date, timedelta, datetime
-import time
 
 from db_pack.oanda import oanda_historical
 
-def test():
-    i=0
-    while i<10:
-        print(i)
-        time.sleep(1)
-        i=i+1
 
 DAG_DEFAULT_ARGS={
     'owner':'airflow',
@@ -21,14 +14,13 @@ DAG_DEFAULT_ARGS={
     'retry_delay':timedelta(minutes=5)
 }
 
-with DAG('fx_test', start_date=datetime(2020,1,1), schedule_interval=timedelta(minutes=1),default_args=DAG_DEFAULT_ARGS, catchup=False) as dag:
+with DAG('test', start_date=datetime(2020,1,1), schedule_interval="*/5 * * * *",default_args=DAG_DEFAULT_ARGS, catchup=False) as dag: #"1****"
     
-    update_secmaster_db = PythonOperator(task_id="update_secmaster_db",python_callable=test)
+    # update_secmaster_db = PythonOperator(task_id="update_secmaster_db",python_callable=oanda_historical.main,op_kwargs={'freq':'h1','initial_start_date':datetime(2020,1,1)})
 
     update_ind_db = BashOperator(
-            bash_command='echo STOPPING',
-            task_id='clear',
-            dag=dag)
+        bash_command="""echo poda patti""",
+        task_id='update_ind_db')
 
-    update_secmaster_db >> update_ind_db
+    update_ind_db
 

@@ -19,3 +19,4 @@ quandl
 pyfolio
 alphalens
 twilio
+slackclient

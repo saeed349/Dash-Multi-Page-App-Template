@@ -57,12 +57,13 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
         end_date -= datetime.timedelta(days=end_date.isoweekday() % 5)
 
     print(start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
-    # try:
-    data = oanda_historical_data(granularity=freq.upper(),instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=end_date.strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
-    # except:
-        # print("exception")
-        # MASTER_LIST_FAILED_SYMBOLS.append(symbol)
-        # raise Exception('Failed to load {}'.format(symbol))
+    try:
+        data = oanda_historical_data(granularity=freq.upper(),instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=end_date.strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
+    except:
+        print("exception")
+        MASTER_LIST_FAILED_SYMBOLS.append(symbol)
+        raise Exception('Failed to load {}'.format(symbol))
+    
     if data.empty:
         print(symbol," already updated")
 
@@ -96,20 +97,16 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
         # ensure our data is sorted by date
         newDF = newDF.sort_values(by=['date_price'], ascending = True)
 
-        print(newDF['symbol_id'].unique())
-        print(newDF['date_price'].min())
-        print(newDF['date_price'].max())
-        print("")
+        # this is to avoid taking the data that's already in the DB.
+        newDF=newDF[newDF['date_price']>pytz.utc.localize(start_date)] ## added 7/7/2020 10 PM
+        
         # so that it leaves out the last incomplete candle 
         # the problem is that, this is an edge case. On Saturday or Sunday, this would only record till Thursday, so we are missing Friday. 
         # same situation for Weekly as well, that week wont be recorded till Monday till we have new incomplete data. Same goes for monthly as well. 
         # Right now I am checking if the last candle and the current time has a difference of more than 1 day. This will solve for the edge condition when we are running when the market closes on Friday but only if we are running the data load script on Saturday. 
-        print(date_diff.days)
-        newDF=newDF[newDF['date_price']>pytz.utc.localize(start_date)] ## added 7/7/2020 10 PM
-        newDF.to_csv("before_new_test.csv")
+        print("DATE_DIFF=",date_diff.days)
         if date_diff.days < 1:
             newDF=newDF[:-1]
-        newDF.to_csv("new_test.csv")
         write_db.write_db_dataframe(df=newDF, conn=conn, table=(freq+'_data')) 
         print('{} complete!'.format(symbol))
 
@@ -192,12 +189,12 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
             last_date = stock['last_date']
             symbol_id = stock['symbol_id']
             symbol = stock['ticker']
-            # try:
-            print(symbol)
-            load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date, freq=freq)
-            # except:
-            #     print("exception")
-            #     continue
+            try:
+                print(symbol)
+                load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date, freq=freq)
+            except:
+                print("exception")
+                continue
 
         # lets write our failed stock list to text file for reference
         file_to_write = open('failed_symbols_oanda.txt', 'w')

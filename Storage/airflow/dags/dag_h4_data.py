@@ -14,7 +14,7 @@ DAG_DEFAULT_ARGS={
     'retry_delay':timedelta(minutes=5)
 }
 
-with DAG('fx_h4_data_download', start_date=datetime(2020,1,1), schedule_interval=timedelta(hours=4,minutes=1),default_args=DAG_DEFAULT_ARGS, catchup=False) as dag:
+with DAG('fx_h4_data_download', start_date=datetime(2020,1,1), schedule_interval="1 */4 * * *",default_args=DAG_DEFAULT_ARGS, catchup=False) as dag: #timedelta(hours=4)
     
     update_secmaster_db = PythonOperator(task_id="update_secmaster_db",python_callable=oanda_historical.main,op_kwargs={'freq':'h4','initial_start_date':datetime(2020,1,1)})
 

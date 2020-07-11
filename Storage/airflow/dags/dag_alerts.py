@@ -1,22 +1,22 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
+from airflow.operators.bash_operator import BashOperator
 from airflow.contrib.sensors.file_sensor import FileSensor
 from datetime import date, timedelta, datetime
 
-from db_pack.oanda import oanda_daily
-from db_pack.oanda import oanda_minute
+from q_tools import alerts
+
 
 DAG_DEFAULT_ARGS={
     'owner':'airflow',
     'depends_on_past':False,
     'retries':1,
-    'retry_delay':timedelta(minutes=1)
+    'retry_delay':timedelta(minutes=5)
 }
 
-with DAG('fx_data_download', start_date=datetime(2019,1,1), schedule_interval='@daily',default_args=DAG_DEFAULT_ARGS, catchup=False) as dag:
+with DAG('pattern_alerts', start_date=datetime(2020,1,1), schedule_interval=timedelta(hours=1,minutes=1),default_args=DAG_DEFAULT_ARGS, catchup=False) as dag:
     
-    updating_db_daily = PythonOperator(task_id="updating_db_daily",python_callable=oanda_daily.main)
+    slack_alerts= PythonOperator(task_id="slack_alerts",python_callable=alerts.price_candle_alerts)
 
-    updating_db_minute = PythonOperator(task_id="updating_db_minute",python_callable=oanda_minute.main)
+    slack_alerts
 
-    updating_db_daily >> updating_db_minute

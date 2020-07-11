@@ -8,3 +8,4 @@ minio
 boto3
 sklearn
 twilio
+slackclient

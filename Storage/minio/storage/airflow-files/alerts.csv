@@ -1,3 +1,3 @@
 Ticker,Time,Hypothesis,Type,Pattern,Frequency,Price,Trigger Message,Sent
-EUR_USD,6/14/2020 16:33,,Candle,Bear,"m60,m240",,Hello,True
+EUR_USD,6/14/2020 16:33,,Candle,Bear,"h1,h4,d",,Hello,True
 GBP_USD,6/14/2020 16:33,,Price,,,0.5,Hello,True
