@@ -50,9 +50,9 @@ def price_candle_alerts():
                 for ind in ['candle_1','candle_2','candle_3']:
                     sql="select d.date_price as date, d.value from %s d join symbol s on d.symbol_id = s.id join indicator i on i.id=d.indicator_id where s.ticker='%s' and i.name = '%s' and d.date_price > '%s' order by date desc limit 1" %((t+'_data'),row['Ticker'], ind, row['Time'])
                     df_ind=pd.read_sql(sql,con=conn_indicator)
-                    if df_ind['value'][0]['level']!=0:
+                    if df_ind['value'][0]['level']>0 and :
                         result+= "\n" + (row["Ticker"]+"-"+t+"-Pattern="+df_ind['value'][0]['pattern_name'])
-                        df.loc[i,'Sent']=True
+                        # df.loc[i,'Sent']=True
             if result:
     #             twilio_msg(result)
                 data={'text':result}

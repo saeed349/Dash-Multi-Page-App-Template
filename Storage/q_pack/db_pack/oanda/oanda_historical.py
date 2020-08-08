@@ -38,7 +38,6 @@ import q_tools.write_db as write_db
 
 MASTER_LIST_FAILED_SYMBOLS = []
 
-
 def load_data(symbol, symbol_id, conn, start_date,freq):
     """
     This will load stock data (date+OHLCV) and additional info to our daily_data table.
@@ -53,8 +52,8 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
     client = oandapyV20.API(access_token=oanda_cred.token_practice)
     cur = conn.cursor()
     end_date = datetime.datetime.now()
-    if end_date.isoweekday() in set((6, 7)): # to take the nearest weekday
-        end_date -= datetime.timedelta(days=end_date.isoweekday() % 5)
+    # if end_date.isoweekday() in set((6, 7)): # to take the nearest weekday
+    #     end_date -= datetime.timedelta(days=end_date.isoweekday() % 5)
 
     print(start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
     try:
@@ -84,6 +83,7 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
         else:
             newDF['date_price'] =  data.index
             date_diff = datetime.datetime.utcnow().date()-newDF['date_price'].max().date()
+
         data.reset_index(drop=True,inplace=True)
         newDF['open_price'] = data['open']
         newDF['high_price'] = data['high']
@@ -98,8 +98,9 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
         newDF = newDF.sort_values(by=['date_price'], ascending = True)
 
         # this is to avoid taking the data that's already in the DB.
-        newDF=newDF[newDF['date_price']>pytz.utc.localize(start_date)] ## added 7/7/2020 10 PM
-        
+        newDF.to_csv("before.csv")
+        newDF=newDF[newDF['date_price']>pytz.utc.localize(start_date)] ## added 7/7/2020 10 PM #REF1
+        newDF.to_csv("after.csv")
         # so that it leaves out the last incomplete candle 
         # the problem is that, this is an edge case. On Saturday or Sunday, this would only record till Thursday, so we are missing Friday. 
         # same situation for Weekly as well, that week wont be recorded till Monday till we have new incomplete data. Same goes for monthly as well. 
@@ -174,11 +175,14 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
         # Filling the empty dates returned from the DB with the initial start date
         df_ticker_last_day['last_date'].fillna(initial_start_date,inplace=True)
 
-        # Adding 1 day, so that the data is appended starting next date
-        if freq=='d':
-            df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(days=1)
-        else:
-            df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(minutes=1)
+        # Adding 1 day, so that the data is appended starting next date # Commenting this because I believe the REF1 would solve this issue
+        # if freq=='d':
+        #     df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(days=1)
+        # else:
+        #     df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(minutes=1)
+
+        # To see if the edge case of not recording the last hour of the weekend is solved
+        # df_ticker_last_day['last_date']=df_ticker_last_day['last_date']-datetime.timedelta(minutes=1)
 
         startTime = datetime.datetime.now()
 
