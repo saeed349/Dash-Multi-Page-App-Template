@@ -16,6 +16,7 @@ RUN pip install --requirement /tmp/requirements.txt && \
     jupyter labextension install plotlywidget --no-build &&\
     # jupyter labextension install qgrid2 --no-build &&\ # not working 
     # jupyter labextension install jupyterlab-chart-editor --no-build &&\  # adding this breaks the above stuff. But individually this works.
+    jupyter labextension install jupyterlab-dash@0.1.0-alpha.3 &&\
     jupyter lab build &&\
     unset NODE_OPTIONS
 
