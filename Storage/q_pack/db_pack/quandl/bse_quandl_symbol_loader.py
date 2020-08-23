@@ -33,7 +33,7 @@ def insert_symbols(conn,data_vendor_id):
     Key="interested_tickers_quandl.xlsx"
     read_file = s3.get_object(Bucket=Bucket, Key=Key)
     df = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="Interested Symbols")
-    df['instrument']='Equity'
+    df['instrument']='BSE_Equity'
     df['currency']='INR'
     df['exchange']='BSE'
     df['data_vendor_id']=data_vendor_id

@@ -38,7 +38,7 @@ def insert_symbols(conn,data_vendor_id):
 
     symbols = []
     for i,symbol in df.iterrows():
-        symbols.append({'ticker':symbol['name'],'instrument':'Forex','name':symbol['displayName'],'data_vendor_id':data_vendor_id,'created_date':now,'last_updated_date':now})
+        symbols.append({'ticker':symbol['name'],'exchange':'Forex','instrument':'Forex','name':symbol['displayName'],'data_vendor_id':data_vendor_id,'created_date':now,'last_updated_date':now})
     write_db.write_db_dataframe(df=pd.DataFrame(symbols), conn=conn, table='symbol') 
     print("number of symbols loaded = ",len(symbols))  
 

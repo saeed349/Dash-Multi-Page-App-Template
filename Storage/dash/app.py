@@ -8,6 +8,7 @@ import datetime
 warnings.filterwarnings('ignore')
 
 import dash
+import dash_table
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
@@ -83,17 +84,6 @@ app = dash.Dash(
 )
 
 
-# app.layout = html.Div([
-#     html.Div([
-#         dcc.Graph(id="plot-candle")#,figure=Currentfig
-#     ],style = {'display': 'inline-block', 'width': '100%','height':'200%'},className='row'),
-#     html.Div(
-#         [
-#             html.Div([dcc.Dropdown(id='dropdown-securities',
-#                     options=[{'label': i, 'value': i} for i in df_ticker_last_day['ticker'].unique()], multi=False, value="EUR_USD")],className='two columns')               
-#     ],className='row'),
-# ])
-
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content')
@@ -120,24 +110,80 @@ page_individual_layout = html.Div([
     dcc.Link('Go back to home', href='/')
 ])
 
-@app.callback(dash.dependencies.Output('page-1-content', 'children'),
-              [dash.dependencies.Input('page-1-dropdown', 'value')])
-def page_1_dropdown(value):
-    return 'You have selected "{}"'.format(value)
+sql="select distinct instrument from symbol" # change it to exchange when you reload oanda
+df_instrument_type=pd.read_sql(sql,con=conn_indicator)
 
-page_2_layout = html.Div([
-    html.H1('Page 2'),
-    dcc.RadioItems(
-        id='page-2-radios',
-        options=[{'label': i, 'value': i} for i in ['Orange', 'Blue', 'Red']],
-        value='Orange'
-    ),
-    html.Div(id='page-2-content'),
-    html.Br(),
-    dcc.Link('Go to Page 1', href='/page-1'),
+sql="select * from indicator"
+ind_list=list(pd.read_sql(sql,con=conn_indicator)['name'])
+ind_list_id=list(pd.read_sql(sql,con=conn_indicator)['id'])
+
+sql="select * from indicator"
+df_ind_type=pd.read_sql(sql,con=conn_indicator)
+
+page_agregrate_layout = html.Div([
+    # html.Div([
+    #     dcc.Graph(id="plot-candle")#,figure=Currentfig
+    # ],style = {'display': 'inline-block', 'width': '100%','height':'200%'},className='row'),
+    html.Div(
+        [
+            html.Div([dcc.Dropdown(id='dropdown-instrument',
+                    options=[{'label': i, 'value': i} for i in df_instrument_type['instrument'].unique()], multi=False, value="Forex")],
+            className='two columns'),
+            html.Div([dcc.Dropdown(id='dropdown-indicator',
+                    options=[{'label': row['name'], 'value': row['id']} for i,row in df_ind_type.iterrows()], multi=False, value="1")],
+                    className='two columns'),
+    ],className='row'),
+    html.Div([
+        html.Div([
+        dash_table.DataTable(
+            id='indicator_table',
+            editable=False,
+    #         page_size=10,
+    #         page_action='none',
+            style_table={'height': '400px', 'overflowY': 'auto'},
+            # export_format='xlsx'
+        )],className='twelve columns')
+    ],className='row'),
     html.Br(),
     dcc.Link('Go back to home', href='/')
 ])
+
+# @app.callback(dash.dependencies.Output('page-1-content', 'children'),
+#               [dash.dependencies.Input('page-1-dropdown', 'value')])
+# def page_1_dropdown(value):
+#     sql="""SELECT max(s.id) as id, s.ticker, s.name, max(d.date_price) as date
+#     FROM symbol s inner join d_data d on s.id= d.symbol_id where s.instrument='{}'
+#     group by s.ticker,s.name""".format(selected_instrument)
+#     df_symbols=pd.read_sql(sql,con=conn_indicator)
+#     symbol_id=[str(i) for i in df_symbols['id']]
+#     interested_date=(datetime.datetime.now().date()-datetime.timedelta(days=3)).strftime("%m-%d-%Y")
+#     sql="select s.ticker, d.value, d.date_price as date from d_data d join symbol s on d.symbol_id=s.id where d.symbol_id in ({}) and d.indicator_id={} and date_price>'{}'".format((','.join(symbol_id))indicator,instrument)
+#     df_indicator=pd.read_sql(sql,con=conn_indicator)
+#     df_indicator=pd.concat([df_indicator.drop(['value'], axis=1), df_indicator['value'].apply(pd.Series)], axis=1)
+#     columns=[{"name": i, "id": i} for i in df_indicator.columns]
+#     data=df_indicator.to_dict('records')
+#     return data,columns
+
+
+
+
+@app.callback([Output('indicator_table', 'data'),
+              Output('indicator_table', 'columns')],
+              [Input('dropdown-indicator', 'value')],
+              [State('dropdown-instrument', 'value')])
+def indicator_dropdown(indicator,instrument):
+    sql="""SELECT max(s.id) as id, s.ticker, s.name, max(d.date_price) as date
+    FROM symbol s inner join d_data d on s.id= d.symbol_id where s.instrument='{}'
+    group by s.ticker,s.name""".format(instrument)
+    df_symbols=pd.read_sql(sql,con=conn_indicator)
+    symbol_id=[str(i) for i in df_symbols['id']]
+    interested_date=(datetime.datetime.now().date()-datetime.timedelta(days=3)).strftime("%m-%d-%Y")
+    sql="select s.ticker, d.value, d.date_price as date from d_data d join symbol s on d.symbol_id=s.id where d.symbol_id in ({}) and d.indicator_id={} and date_price>'{}'".format((','.join(symbol_id)),indicator,interested_date)
+    df_indicator=pd.read_sql(sql,con=conn_indicator)
+    df_indicator=pd.concat([df_indicator.drop(['value'], axis=1), df_indicator['value'].apply(pd.Series)], axis=1)
+    columns=[{"name": i, "id": i} for i in df_indicator.columns]
+    data=df_indicator.to_dict('records')
+    return data,columns
 
 @app.callback(dash.dependencies.Output('page-2-content', 'children'),
               [dash.dependencies.Input('page-2-radios', 'value')])
@@ -151,7 +197,7 @@ def display_page(pathname):
     if pathname == '/individual':
         return page_individual_layout
     elif pathname == '/agregrate':
-        return page_2_layout
+        return page_agregrate_layout
     else:
         return index_page
 
@@ -234,15 +280,15 @@ def updatePlot(securityValue):
     return fig
 
 
-@app.callback(
-    Output(component_id='plot_candle', component_property='figure'),
-    [Input('plot_candle', 'relayoutData')],
-    [State('plot_candle', 'figure')]
-)
-def update_output_div(input_value, fig):
-    fig['layout'] = {"title": "Poda Patti"}
-    print(input_value)
-    return fig
+# @app.callback(
+#     Output(component_id='plot_candle', component_property='figure'),
+#     [Input('plot_candle', 'relayoutData')],
+#     [State('plot_candle', 'figure')]
+# )
+# def update_output_div(input_value, fig):
+#     fig['layout'] = {"title": "Poda Patti"}
+#     print(input_value)
+#     return fig
 
 
 if __name__=="__main__":
