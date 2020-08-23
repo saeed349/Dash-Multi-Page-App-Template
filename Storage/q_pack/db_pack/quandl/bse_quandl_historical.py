@@ -26,18 +26,16 @@ import pandas as pd
 import os
 import io
 import boto3
-import gspread
 import quandl
-from oauth2client.service_account import ServiceAccountCredentials
-
 import q_credentials.db_secmaster_cred as db_secmaster_cred
 import q_credentials.quandl_cred as quandl_cred
 import q_tools.read_db as read_db
 import q_tools.write_db as write_db
+import pytz
 
 MASTER_LIST_FAILED_SYMBOLS = []
 
-def load_data(symbol, symbol_id, conn, start_date):
+def load_data(symbol, symbol_id, conn, start_date,freq):
     api = quandl.ApiConfig.api_key = quandl_cred.quandl_api
 
     cur = conn.cursor()
@@ -45,19 +43,19 @@ def load_data(symbol, symbol_id, conn, start_date):
     if end_date.isoweekday() in set((6, 7)): # to take the nearest weekday
         end_date -= datetime.timedelta(days=end_date.isoweekday() % 5)
     
-    try:
+    # try:
         # data = api.polygon.historic_agg_v2(symbol, 1, 'day', _from=start_date.strftime("%Y-%m-%d"),to=datetime.datetime.now().strftime("%Y-%m-%d")).df
-        print(end_date)
-        data = quandl.get(('BSE/'+symbol), 
+    print(end_date)
+    data = quandl.get(('BSE/'+symbol), 
             returns='pandas', 
             start_date=start_date,
             # end_date=end_date,
             collapse='daily',
             order='asc'
             )
-    except:
-        MASTER_LIST_FAILED_SYMBOLS.append(symbol)
-        raise Exception('Failed to load {}'.format(symbol))
+    # except:
+        # MASTER_LIST_FAILED_SYMBOLS.append(symbol)
+        # raise Exception('Failed to load {}'.format(symbol))
 
     if data.empty:
         print(symbol," already updated")
@@ -65,38 +63,47 @@ def load_data(symbol, symbol_id, conn, start_date):
     else:        
         # create new dataframe matching our table schema
         # and re-arrange our dataframe to match our database table
-        columns_table_order = ['stock_id', 'created_date', 
+        columns_table_order = ['symbol_id', 'created_date', 
                                'last_updated_date', 'date_price', 'open_price',
                                'high_price', 'low_price', 'close_price', 'volume']
         newDF = pd.DataFrame()
-        newDF['date_price'] =  (data.index).date
+        # newDF['date_price'] =  (data.index).date
+        if freq=='d':
+            # newDF['date_price'] =  (data.index+pd.DateOffset(hours=3)).date
+            newDF['date_price'] =  (data.index).date
+            date_diff = datetime.datetime.utcnow().date()-newDF['date_price'].max()
+        else:
+            newDF['date_price'] =  data.index
+            date_diff = datetime.datetime.utcnow().date()-newDF['date_price'].max().date()
         data.reset_index(drop=True,inplace=True)
         newDF['open_price'] = data['Open']
         newDF['high_price'] = data['High']
         newDF['low_price'] = data['Low']
         newDF['close_price'] = data['Close']
         newDF['volume'] = data['Total Turnover']
-        newDF['stock_id'] = symbol_id
+        newDF['symbol_id'] = symbol_id
         newDF['created_date'] = datetime.datetime.utcnow()
         newDF['last_updated_date'] = datetime.datetime.utcnow()
         newDF = newDF[columns_table_order]
-
-
         # ensure our data is sorted by date
         newDF = newDF.sort_values(by=['date_price'], ascending = True)
 
-        print(newDF['stock_id'].unique())
+        print(newDF['symbol_id'].unique())
         print(newDF['date_price'].min())
         print(newDF['date_price'].max())
         print("")
-
-        write_db.write_db_dataframe(df=newDF, conn=conn, table='daily_data') 
-
+        newDF=newDF[newDF['date_price']>pytz.utc.localize(start_date)]
+        write_db.write_db_dataframe(df=newDF, conn=conn, table=(freq+'_data')) 
+        print("DATE_DIFF=",date_diff.days)
+        if date_diff.days < 1:
+            newDF=newDF[:-1]
+        write_db.write_db_dataframe(df=newDF, conn=conn, table=(freq+'_data')) 
         print('{} complete!'.format(symbol))
 
-def main():
-    initial_start_date = datetime.datetime(2015,12,30)
-    
+def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
+    # initial_start_date = datetime.datetime(2015,12,30)
+    if type(initial_start_date)==str:
+        datetime.datetime.strptime(initial_start_date, "%m-%d-%Y")
     db_host=db_secmaster_cred.dbHost 
     db_user=db_secmaster_cred.dbUser
     db_password=db_secmaster_cred.dbPWD
@@ -113,49 +120,46 @@ def main():
     Bucket="airflow-files"
     Key="interested_tickers_quandl.xlsx"
     read_file = s3.get_object(Bucket=Bucket, Key=Key)
-    df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
-
-
+    df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name=freq)
 
     if df_tickers.empty:
         print("Empty Ticker List")
     else:
         # Getting the last date for each interested tickers
-        sql="""select a.last_date, b.id as stock_id, b.ticker from
-            (select max(date_price) as last_date, stock_id
-            from daily_data 
-            group by stock_id) a right join symbol b on a.stock_id = b.id 
-            where b.ticker in {} and b.data_vendor_id={}""".format(str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
+        sql="""select a.last_date, b.id as symbol_id, b.ticker from
+            (select max(date_price) as last_date, symbol_id
+            from {}_data 
+            group by symbol_id) a right join symbol b on a.symbol_id = b.id 
+            where b.ticker in {} and b.data_vendor_id={}""".format(freq,str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
         df_ticker_last_day=pd.read_sql(sql,con=conn)
 
         # Filling the empty dates returned from the DB with the initial start date
         df_ticker_last_day['last_date'].fillna(initial_start_date,inplace=True)
 
         # Adding 1 day, so that the data is appended starting next date
-        df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(days=1)
+        # df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(days=1)
         
         startTime = datetime.datetime.now()
 
         print (datetime.datetime.now() - startTime)
-
+        print(df_ticker_last_day)
         for i,stock in df_ticker_last_day.iterrows() :
             # download stock data and dump into daily_data table in our Postgres DB
             last_date = stock['last_date']
-            symbol_id = stock['stock_id']
+            symbol_id = stock['symbol_id']
             symbol = stock['ticker']
-            try:
-                load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date)
-            except:
-                continue
+            # try:
+            load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date,freq=freq)
+            # except:
+                # print("exception")
+                # continue
 
         # lets write our failed stock list to text file for reference
-        file_to_write = open('failed_symbols.txt', 'w')
+        file_to_write = open('failed_symbols_quandl.txt', 'w')
 
         for symbol in MASTER_LIST_FAILED_SYMBOLS:
             file_to_write.write("%s\n" % symbol)
 
         print(datetime.datetime.now() - startTime)
-    
-
 if __name__ == "__main__":
     main()

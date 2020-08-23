@@ -140,9 +140,7 @@ def oanda_historical_data(instrument,start_date,end_date,granularity='D',client=
 
 def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
     if type(initial_start_date)==str:
-        datetime.datetime.strptime(initial_start_date, "%m-%d-%Y")
-    # initial_start_date = datetime.datetime(2015,12,30)
-    
+        datetime.datetime.strptime(initial_start_date, "%m-%d-%Y")   
     db_host=db_secmaster_cred.dbHost 
     db_user=db_secmaster_cred.dbUser
     db_password=db_secmaster_cred.dbPWD
