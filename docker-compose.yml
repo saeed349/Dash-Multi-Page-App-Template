@@ -146,6 +146,27 @@ services:
             - 8080:8080
         command: webserver
 
+    dash:
+        container_name: "dash"
+        build:
+            context: ./dockerfiles/dockerfile_dash
+        restart: always
+        ports:
+            - 8050:8050
+            - "5001:5001" # app(debug) port
+            - "3000:3000" # remote debugger attach port
+        depends_on:
+            - postgres
+        volumes:
+            - ${WD}/dash:/app
+            - ${WD}/q_pack:/q_pack
+        environment: 
+            - FLASK_DEBUG=1
+            - FLASK_APP=app.py
+            - FLASK_ENV=development
+        # command:
+        #     python app.py --host=0.0.0.0"
+
 volumes:
     pg_data:
         external: false
