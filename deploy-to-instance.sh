@@ -2,6 +2,7 @@
 set -x
 ADDRESS=$1
 USERNAME=$2
+GIT_REPO=$3
 
 test -f build.pem && chmod 600 build.pem
 apt-get update && apt-get install -y ssh
