@@ -167,11 +167,12 @@ page_agregrate_layout = html.Div([
 
 
 
+
 @app.callback([Output('indicator_table', 'data'),
               Output('indicator_table', 'columns')],
               [Input('dropdown-indicator', 'value')],
               [State('dropdown-instrument', 'value')])
-def indicator_dropdown(indicator,instrument):
+def indicator_table_fun(indicator,instrument):
     sql="""SELECT max(s.id) as id, s.ticker, s.name, max(d.date_price) as date
     FROM symbol s inner join d_data d on s.id= d.symbol_id where s.instrument='{}'
     group by s.ticker,s.name""".format(instrument)

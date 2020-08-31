@@ -59,6 +59,9 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
     try:
         data = oanda_historical_data(granularity=freq.upper(),instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=end_date.strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
     except:
+        # sometimes the clocked is skewed and by few seconds off and the end date is in the future and that returns an error.
+        if freq=='d':
+            data = oanda_historical_data(granularity=freq.upper(),instrument=symbol,start_date=start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date=(end_date-datetime.timedelta(seconds=60)).strftime("%Y-%m-%dT%H:%M:%SZ"),client=client)
         print("exception")
         MASTER_LIST_FAILED_SYMBOLS.append(symbol)
         raise Exception('Failed to load {}'.format(symbol))
