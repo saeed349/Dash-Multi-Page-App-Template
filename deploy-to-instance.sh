@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 ADDRESS=$1
 USERNAME=$2
 
