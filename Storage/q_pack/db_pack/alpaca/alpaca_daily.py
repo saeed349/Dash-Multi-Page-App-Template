@@ -26,30 +26,45 @@ import pandas as pd
 import os
 import io
 import boto3
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+import pytz
+
 
 import alpaca_trade_api as tradeapi
 import q_credentials.alpaca_cred as alpaca_cred
-# import q_credentials.db_secmaster_cloud_cred as db_secmaster_cred
 import q_credentials.db_secmaster_cred as db_secmaster_cred
 import q_tools.read_db as read_db
 import q_tools.write_db as write_db
 MASTER_LIST_FAILED_SYMBOLS = []
 
-def load_data(symbol, symbol_id, conn, start_date):
+def obtain_list_db_tickers(conn, vendor_name):
+    with conn:
+        cur = conn.cursor()
+        cur.execute("SELECT s.id, s.ticker FROM symbol s INNER JOIN data_vendor v ON (s.data_vendor_id = v.id) where v.name = %s", (vendor_name,)) 
+        data = cur.fetchall()
+        return [(d[0], d[1]) for d in data]
+
+def fetch_data_vendor_id(vendor, conn):
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM data_vendor WHERE name = %s", (vendor,))
+    data_vendor_id = cur.fetchall()
+    data_vendor_id = data_vendor_id[0][0]
+    return data_vendor_id
+
+def load_data(symbol, symbol_id, conn, start_date,freq):
     api = tradeapi.REST(alpaca_cred.api_key, alpaca_cred.secret_key)
 
     cur = conn.cursor()
     end_dt = datetime.datetime.now()
     if end_dt.isoweekday() in set((6, 7)): # to take the nearest weekday
         end_dt -= datetime.timedelta(days=end_dt.isoweekday() % 5)
-    try:
+    
+    # try:
         # data = api.get_barset([symbol], 'day', start=start_date).df[symbol]# the start_date functionality is not working with Alpaca
-        data = api.polygon.historic_agg_v2(symbol, 1, 'day', _from=start_date.strftime("%Y-%m-%d"),to=datetime.datetime.now().strftime("%Y-%m-%d")).df
-    except:
-        MASTER_LIST_FAILED_SYMBOLS.append(symbol)
-        raise Exception('Failed to load {}'.format(symbol))
+    data = api.polygon.historic_agg_v2(symbol, 1, 'day', _from=start_date.strftime("%Y-%m-%d"),to=datetime.datetime.now().strftime("%Y-%m-%d")).df
+        # data = yf.download(symbol, start=start_dt, end=end_dt)
+    # except:
+        # MASTER_LIST_FAILED_SYMBOLS.append(symbol)
+        # raise Exception('Failed to load {}'.format(symbol))
 
     if data.empty:
         print(symbol," already updated")
@@ -57,37 +72,35 @@ def load_data(symbol, symbol_id, conn, start_date):
     else:        
         # create new dataframe matching our table schema
         # and re-arrange our dataframe to match our database table
-        columns_table_order = ['stock_id', 'created_date', 
+        columns_table_order = ['symbol_id', 'created_date', 
                                'last_updated_date', 'date_price', 'open_price',
                                'high_price', 'low_price', 'close_price', 'volume']
         newDF = pd.DataFrame()
         newDF['date_price'] =  (data.index).date
+        date_diff = datetime.datetime.utcnow().date()-newDF['date_price'].max()
         data.reset_index(drop=True,inplace=True)
         newDF['open_price'] = data['open']
         newDF['high_price'] = data['high']
         newDF['low_price'] = data['low']
         newDF['close_price'] = data['close']
         newDF['volume'] = data['volume']
-        newDF['stock_id'] = symbol_id
+        newDF['symbol_id'] = symbol_id
         newDF['created_date'] = datetime.datetime.utcnow()
         newDF['last_updated_date'] = datetime.datetime.utcnow()
         newDF = newDF[columns_table_order]
-
-
         # ensure our data is sorted by date
         newDF = newDF.sort_values(by=['date_price'], ascending = True)
-
-        print(newDF['stock_id'].unique())
-        print(newDF['date_price'].min())
-        print(newDF['date_price'].max())
-        print("")
-
-        write_db.write_db_dataframe(df=newDF, conn=conn, table='daily_data') 
+        newDF=newDF[newDF['date_price']>pytz.utc.localize(start_date)]
+        print("DATE_DIFF=",date_diff.days)
+        if date_diff.days < 1:
+            newDF=newDF[:-1]
+        write_db.write_db_dataframe(df=newDF, conn=conn, table=(freq+'_data')) 
         print('{} complete!'.format(symbol))
 
-def main():
-    initial_start_date = datetime.datetime(2010,12,30)
-    
+
+def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
+    if type(initial_start_date)==str:
+        datetime.datetime.strptime(initial_start_date, "%m-%d-%Y")  
     db_host=db_secmaster_cred.dbHost 
     db_user=db_secmaster_cred.dbUser
     db_password=db_secmaster_cred.dbPWD
@@ -98,53 +111,51 @@ def main():
 
     vendor = 'Alpaca'
     sql="SELECT id FROM data_vendor WHERE name = '%s'" % (vendor)
-    data_vendor_id=read_db.read_db_single(sql,conn)   
+    data_vendor_id=read_db.read_db_single(sql,conn) 
 
     s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
     Bucket="airflow-files"
     Key="interested_tickers_alpaca.xlsx"
     read_file = s3.get_object(Bucket=Bucket, Key=Key)
-    df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="daily")
+    df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name=freq)
 
     if df_tickers.empty:
         print("Empty Ticker List")
     else:
         # Getting the last date for each interested tickers
-        sql="""select a.last_date, b.id as stock_id, b.ticker from
-            (select max(date_price) as last_date, stock_id
-            from daily_data 
-            group by stock_id) a right join symbol b on a.stock_id = b.id 
-            where b.ticker in {} and b.data_vendor_id={}""".format(str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
+        sql="""select a.last_date, b.id as symbol_id, b.ticker from
+            (select max(date_price) as last_date, symbol_id
+            from {}_data 
+            group by symbol_id) a right join symbol b on a.symbol_id = b.id 
+            where b.ticker in {} and b.data_vendor_id={}""".format(freq,str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
         df_ticker_last_day=pd.read_sql(sql,con=conn)
 
         # Filling the empty dates returned from the DB with the initial start date
         df_ticker_last_day['last_date'].fillna(initial_start_date,inplace=True)
 
-        # Adding 1 day, so that the data is appended starting next date
-        df_ticker_last_day['last_date']=df_ticker_last_day['last_date']+datetime.timedelta(days=1)
         
         startTime = datetime.datetime.now()
 
         print (datetime.datetime.now() - startTime)
-
+        print(df_ticker_last_day)
         for i,stock in df_ticker_last_day.iterrows() :
             # download stock data and dump into daily_data table in our Postgres DB
             last_date = stock['last_date']
-            symbol_id = stock['stock_id']
+            symbol_id = stock['symbol_id']
             symbol = stock['ticker']
-            try:
-                load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date)
-            except:
-                continue
+            # try:
+            print(symbol)
+            load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date, freq=freq)
+            # except:
+            #     print("exception")
+            #     continue
 
         # lets write our failed stock list to text file for reference
-        file_to_write = open('failed_symbols_alpaca.txt', 'w')
+        file_to_write = open('failed_symbols_oanda.txt', 'w')
 
         for symbol in MASTER_LIST_FAILED_SYMBOLS:
             file_to_write.write("%s\n" % symbol)
 
         print(datetime.datetime.now() - startTime)
-    
-
 if __name__ == "__main__":
     main()

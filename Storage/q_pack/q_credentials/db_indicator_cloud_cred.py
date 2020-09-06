@@ -1,5 +1,5 @@
 dbHost="db.equibrant.com"
 dbUser="smd"
 dbPWD="p4ssw0rd"
-dbName="smd_secmaster"
+dbName="indicator_db"
 

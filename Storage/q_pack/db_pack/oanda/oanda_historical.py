@@ -99,11 +99,10 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
         newDF = newDF[columns_table_order]
         # ensure our data is sorted by date
         newDF = newDF.sort_values(by=['date_price'], ascending = True)
-
         # this is to avoid taking the data that's already in the DB.
-        newDF.to_csv("before.csv")
+        # newDF.to_csv("before.csv")
         newDF=newDF[newDF['date_price']>pytz.utc.localize(start_date)] ## added 7/7/2020 10 PM #REF1
-        newDF.to_csv("after.csv")
+        # newDF.to_csv("after.csv")
         # so that it leaves out the last incomplete candle 
         # the problem is that, this is an edge case. On Saturday or Sunday, this would only record till Thursday, so we are missing Friday. 
         # same situation for Weekly as well, that week wont be recorded till Monday till we have new incomplete data. Same goes for monthly as well. 

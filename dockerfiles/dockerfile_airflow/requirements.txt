@@ -9,3 +9,4 @@ boto3
 sklearn
 twilio
 slackclient
+alpaca_trade_api

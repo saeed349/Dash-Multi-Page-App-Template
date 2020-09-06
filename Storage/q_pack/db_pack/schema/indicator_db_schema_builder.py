@@ -3,7 +3,7 @@
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 import os
-import q_credentials.db_indicator_cred as db_indicator_cred
+import q_credentials.db_indicator_cloud_cred as db_indicator_cred
 
 
 def create_db(db_credential_info):
