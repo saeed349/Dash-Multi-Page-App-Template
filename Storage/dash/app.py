@@ -30,8 +30,14 @@ group by s.ticker"""
 df_ticker_last_day=pd.read_sql(sql,con=conn_secmaster)
 
 def level_plot(df):
-    support_ls = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in df.iloc[-1]['level_support']]
-    resistance_ls = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in df.iloc[-1]['level_resistance']]
+    try:
+        support_ls = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in df.iloc[-1]['level_support']]
+    except:
+        support_ls =[]
+    try:
+        resistance_ls = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in df.iloc[-1]['level_resistance']]
+    except:
+        resistance_ls =[]
     end_dt=df.index[-1]
     res_plot_ls=[]
     sup_plot_ls=[]
@@ -48,23 +54,24 @@ def data_selector(symbol_id):
     start_date=datetime.datetime(2018,1,1).strftime("%Y-%m-%d")
 #     indicator_name = 'candle_1'
     
-    sql="select d.date_price as date, open_price as open, high_price as high, low_price as low , close_price as close,volume from d_data d join symbol s on d.symbol_id = s.id where s.ticker='%s' and d.date_price > '%s'" %(symbol_id, start_date)
-    df_price=pd.read_sql(sql,con=conn_secmaster)
+    # sql="select d.date_price as date, open_price as open, high_price as high, low_price as low , close_price as close,volume from d_data d join symbol s on d.symbol_id = s.id where s.ticker='%s' and d.date_price > '%s'" %(symbol_id, start_date)
+    # df_price=pd.read_sql(sql,con=conn_secmaster)
     
     df_all_ind=pd.DataFrame()
     for ind in ind_list:
         print(ind)
-        sql="select d.date_price as date, d.value from d_data d join symbol s on d.symbol_id = s.id join indicator i on i.id=d.indicator_id where s.ticker='%s' and i.name = '%s' and d.date_price > '%s'" %(symbol_id, ind, start_date)
+        sql="select d.date_price as date, d.value from w_data d join symbol s on d.symbol_id = s.id join indicator i on i.id=d.indicator_id where s.ticker='%s' and i.name = '%s' and d.date_price > '%s'" %(symbol_id, ind, start_date)
         df_indicator=pd.read_sql(sql,con=conn_indicator)
         df_indicator.set_index('date',inplace=True)
         df_indicator=pd.concat([df_indicator.drop(['value'], axis=1), df_indicator['value'].apply(pd.Series)], axis=1)
         df_indicator.columns=[ind+"_"+col for col in df_indicator.columns]
         if df_all_ind.empty:
-            df_all_ind=pd.merge(left=df_price, right=df_indicator,on='date')
+            df_all_ind=df_indicator
         else:
             df_all_ind=pd.merge(left=df_all_ind, right=df_indicator,on='date')
-    
-    df_all_ind.set_index('date',inplace=True)
+
+    df_all_ind.rename(columns={'anomaly_close':'close','anomaly_low':'low','anomaly_high':'high','anomaly_open':'open','anomaly_volume':'volume'},inplace=True)
+    # df_all_ind.set_index('date',inplace=True)
     return df_all_ind
 
 
@@ -129,6 +136,9 @@ page_agregrate_layout = html.Div([
             html.Div([dcc.Dropdown(id='dropdown-instrument',
                     options=[{'label': i, 'value': i} for i in df_instrument_type['instrument'].unique()], multi=False, value="Forex")],
             className='two columns'),
+            html.Div([dcc.Dropdown(id='dropdown-timeframe',
+                 options=[{'label': i, 'value': i} for i in ['m','w','d','4h','1h']], multi=False, value="d")],
+            className='two columns'),
             html.Div([dcc.Dropdown(id='dropdown-indicator',
                     options=[{'label': row['name'], 'value': row['id']} for i,row in df_ind_type.iterrows()], multi=False, value="1")],
                     className='two columns'),
@@ -172,9 +182,9 @@ page_agregrate_layout = html.Div([
               Output('indicator_table', 'columns')],
               [Input('dropdown-indicator', 'value')],
               [State('dropdown-instrument', 'value')])
-def indicator_table_fun(indicator,instrument):
+def indicator_table(indicator,instrument):
     sql="""SELECT max(s.id) as id, s.ticker, s.name, max(d.date_price) as date
-    FROM symbol s inner join d_data d on s.id= d.symbol_id where s.instrument='{}'
+    FROM symbol s inner join w_data d on s.id= d.symbol_id where s.instrument='{}'
     group by s.ticker,s.name""".format(instrument)
     df_symbols=pd.read_sql(sql,con=conn_indicator)
     symbol_id=[str(i) for i in df_symbols['id']]
