@@ -35,7 +35,10 @@ def run(args=None):
     if args.load_symbol:
         s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
         Bucket="airflow-files"
-        Key="interested_tickers_oanda.xlsx"
+        if args.universe=='US Equity':
+            Key="interested_tickers_alpaca.xlsx"
+        elif args.universe=='Forex':
+            Key="interested_tickers_oanda.xlsx"
         read_file = s3.get_object(Bucket=Bucket, Key=Key)
         df = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="d")
         ticker_list = list(df['Tickers'])
@@ -167,6 +170,9 @@ def parse_args(pargs=None):
 
     parser.add_argument('--load_symbol', required=False, default=False, type=args_parse_other.str2bool, const=True, nargs='?',
                     help='load the symbols from excel file')
+
+    parser.add_argument('--universe', required=False, default='',
+                        help='Select the Universe - Currently US Equity, Forex Majors')
 
     return parser.parse_args(pargs)
 

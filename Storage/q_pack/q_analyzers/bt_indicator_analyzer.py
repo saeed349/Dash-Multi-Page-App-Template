@@ -26,14 +26,16 @@ class indicator_analyzer(bt.Analyzer):
         self.cumprofit = 0.0
         self.conn_secmaster = psycopg2.connect(host=db_secmaster_cred.dbHost , database=db_secmaster_cred.dbName, user=db_secmaster_cred.dbUser, password=db_secmaster_cred.dbPWD)
         self.conn_indicator = psycopg2.connect(host=db_indicator_cred.dbHost , database=db_indicator_cred.dbName, user=db_indicator_cred.dbUser, password=db_indicator_cred.dbPWD)
-        sql="""select ticker, instrument, name, currency,created_date from symbol"""
-        df_symbols=pd.read_sql(sql,con=self.conn_indicator)
-        # print(len(df_symbols))
-        if df_symbols.empty:
-            sql="select ticker, instrument, name, currency,created_date from symbol"
-            df_symbols=pd.read_sql(sql,con=self.conn_secmaster)
-            if ~df_symbols.empty:
-                write_db.write_db_dataframe(df=df_symbols, conn=self.conn_indicator, table='symbol')
+        # symbols=[d._name for d in self.datas]
+        # sql="""select ticker, instrument, name, currency,created_date from symbol where ticker in ({})""".format(str(symbols)[1:-1])
+        # print("SYMBOLS=",symbols)
+        # df_symbols=pd.read_sql(sql,con=self.conn_indicator)
+        # # print(len(df_symbols))
+        # if df_symbols.empty:
+        #     sql="select ticker, instrument, name, currency,created_date from symbol where ticker in ({})""".format(str(symbols)[1:-1])
+        #     df_symbols=pd.read_sql(sql,con=self.conn_secmaster)
+        #     if ~df_symbols.empty:
+        #         write_db.write_db_dataframe(df=df_symbols, conn=self.conn_indicator, table='symbol')
 
     def get_analysis(self):
         return None
@@ -59,12 +61,20 @@ class indicator_analyzer(bt.Analyzer):
                     if d._timeframe == 4:
                         time_frame = 'h'+str(int(d._compression/60))
                     # print(d._timeframe,d._compression,time_frame)
-                    write_to_ind_db(sec_name, ind_name,ind_df, time_frame,self.conn_indicator)
+                    write_to_ind_db(sec_name=sec_name, ind_name=ind_name,ind_df=ind_df, time_frame=time_frame,conn_indicator=self.conn_indicator,conn_secmaster=self.conn_secmaster)
 
 
-def write_to_ind_db(sec_name, ind_name, ind_df, time_frame,conn_indicator, period=0):
-    # if ind_name=='level':
-    #     print("Level data is being recorded")
+def write_to_ind_db(sec_name, ind_name, ind_df, time_frame, conn_secmaster,conn_indicator,period=0):
+
+    # loading the data into the symbol table if its not alrady there
+    sql="""select * from symbol where ticker='{}'""".format(sec_name)
+    df_symbols=pd.read_sql(sql,con=conn_indicator)
+    if df_symbols.empty:
+        sql="select ticker, instrument, name, currency,created_date from symbol where ticker='{}'""".format(sec_name)
+        df_symbols=pd.read_sql(sql,con=conn_secmaster)
+        if ~df_symbols.empty:
+            write_db.write_db_dataframe(df=df_symbols, conn=conn_indicator, table='symbol')
+
     sql="SELECT id FROM symbol WHERE ticker = '"+sec_name+"'"
     symbol_id=read_db.read_db_single(sql,conn_indicator)
     sql="SELECT id FROM indicator WHERE name = '"+ind_name+"'"
@@ -73,7 +83,9 @@ def write_to_ind_db(sec_name, ind_name, ind_df, time_frame,conn_indicator, perio
         ind_dict={'name':ind_name,'period':period,'created_date':datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'last_updated_date':datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         ind_id=write_db.write_db_single(conn=conn_indicator, data_dict=ind_dict, table='indicator',return_col="id")
     data_table=time_frame+"_data"
+    print(data_table, ind_id, symbol_id,sec_name)
     sql="SELECT max(date_price) FROM %s WHERE indicator_id = %s and symbol_id = %s" %(data_table, ind_id, symbol_id)
+    print(sql)
     latest_date=read_db.read_db_single(sql,conn_indicator)  
     if isinstance(latest_date, datetime.datetime):
         ind_df=ind_df[ind_df['date_price']>latest_date]
@@ -83,5 +95,5 @@ def write_to_ind_db(sec_name, ind_name, ind_df, time_frame,conn_indicator, perio
     ind_df['created_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     write_db.write_db_dataframe(df=ind_df, conn=conn_indicator, table=data_table) 
     # print("done")
-# 
+    # 
 
