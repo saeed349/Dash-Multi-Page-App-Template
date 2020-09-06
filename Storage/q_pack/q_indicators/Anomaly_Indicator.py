@@ -14,6 +14,14 @@ class Anomaly_Indicator(bt.Indicator):
     def __init__(self):
         self.addminperiod(3)
         self.ind_dict={}
+
+        # # not the neatest trick at all, done only so that I can get the agregrated W and M price and now the rest, so duplicates of price by number of securities, definitely not elegant
+        self.ind_dict['open']=self.data.open
+        self.ind_dict['high']=self.data.high
+        self.ind_dict['low']=self.data.low
+        self.ind_dict['close']=self.data.close
+        self.ind_dict['volume']=self.data.volume
+
         self.ind_dict['bull'] = bt.If(self.data.close > self.data.open, 1, 0)
         self.ind_dict['bear'] = bt.If(self.data.close < self.data.open, 1, 0)
         self.ind_dict['body_size'] = abs(self.data.close-self.data.open)

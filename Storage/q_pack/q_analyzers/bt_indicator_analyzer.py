@@ -44,6 +44,7 @@ class indicator_analyzer(bt.Analyzer):
         num_of_sec=len(self.datas)
         if self.strategy.p.backtest:   
             for i, d in enumerate(self.datas):
+                # print("PODA ",d[0])
                 num_of_indicators=int(len(self.strategy.getindicators())/len(self.strategy.datas))
                 # print(d._name)
                 for j in range(num_of_indicators):

@@ -278,6 +278,13 @@ class Level_Indicator(bt.Indicator):
 
     def write2db(self):
         level_2_db={}
+
+        # # not the neatest trick at all, done only so that I can get the agregrated W and M price and now the rest, so duplicates of price by number of securities, definitely not elegant
+        # level_2_db['open']=self.data.open[0]
+        # level_2_db['high']=self.data.high[0]
+        # level_2_db['low']=self.data.low[0]
+        # level_2_db['close']=self.data.close[0]
+
         level_2_db['level']=self.l.level[0]
 
         if self.level['support']:
