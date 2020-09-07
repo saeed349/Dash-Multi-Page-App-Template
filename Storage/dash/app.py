@@ -141,7 +141,16 @@ page_agregrate_layout = html.Div([
             className='two columns'),
             html.Div([dcc.Dropdown(id='dropdown-indicator',
                     options=[{'label': row['name'], 'value': row['id']} for i,row in df_ind_type.iterrows()], multi=False, value="1")],
-                    className='two columns'),
+            className='two columns'),
+            html.Div([
+                    dcc.DatePickerSingle(
+                    id='date_picker',
+                    # min_date_allowed=datetime.datetime(1995, 8, 5),
+                    # max_date_allowed=datetime.datetime.now(),
+                    # initial_visible_month=datetime.datetime.now(),
+                    # display_format='MMMM Y, DD',
+                    date=str(datetime.datetime.now().date()))],
+            className='four columns'),
     ],className='row'),
     html.Div([
         html.Div([
@@ -175,21 +184,14 @@ page_agregrate_layout = html.Div([
 #     return data,columns
 
 
-
-
-
 @app.callback([Output('indicator_table', 'data'),
               Output('indicator_table', 'columns')],
-              [Input('dropdown-indicator', 'value')],
-              [State('dropdown-instrument', 'value')])
-def indicator_table(indicator,instrument):
-    sql="""SELECT max(s.id) as id, s.ticker, s.name, max(d.date_price) as date
-    FROM symbol s inner join w_data d on s.id= d.symbol_id where s.instrument='{}'
-    group by s.ticker,s.name""".format(instrument)
-    df_symbols=pd.read_sql(sql,con=conn_indicator)
-    symbol_id=[str(i) for i in df_symbols['id']]
-    interested_date=(datetime.datetime.now().date()-datetime.timedelta(days=3)).strftime("%m-%d-%Y")
-    sql="select s.ticker, d.value, d.date_price as date from d_data d join symbol s on d.symbol_id=s.id where d.symbol_id in ({}) and d.indicator_id={} and date_price>'{}'".format((','.join(symbol_id)),indicator,interested_date)
+              [Input('dropdown-instrument', 'value'),
+              Input('dropdown-timeframe', 'value'),
+              Input('dropdown-indicator', 'value'),
+              Input('date_picker', 'date')])
+def indicator_table(instrument,timeframe,indicator,date):
+    sql="select s.ticker, d.value, d.date_price as date from {}_data d join symbol s on d.symbol_id=s.id where s.instrument='{}' and d.indicator_id={} and date_price='{}'".format(timeframe,instrument,indicator,date)
     df_indicator=pd.read_sql(sql,con=conn_indicator)
     df_indicator=pd.concat([df_indicator.drop(['value'], axis=1), df_indicator['value'].apply(pd.Series)], axis=1)
     columns=[{"name": i, "id": i} for i in df_indicator.columns]
@@ -290,16 +292,6 @@ def updatePlot(securityValue):
     fig = dict( data=data, layout=layout )
     return fig
 
-
-# @app.callback(
-#     Output(component_id='plot_candle', component_property='figure'),
-#     [Input('plot_candle', 'relayoutData')],
-#     [State('plot_candle', 'figure')]
-# )
-# def update_output_div(input_value, fig):
-#     fig['layout'] = {"title": "Poda Patti"}
-#     print(input_value)
-#     return fig
 
 
 if __name__=="__main__":
