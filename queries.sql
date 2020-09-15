@@ -17,3 +17,9 @@ SELECT indicator_id, symbol_id, a. created_date, a. date_price as date
 FROM d_data a inner join symbol b on a.symbol_id = b.id 
 where b.ticker='EUR_USD' and a.date_price between '1-1-2020' and '6-19-2020' 
 and indicator_id=3 order by date desc;
+
+
+! python q_pack/q_run/run_BT.py --strat_name=simple_strategy_3 --mode=backtest --tickers=AUD_USD,EUR_JPY,EUR_USD,GBP_JPY,GBP_USD,NZD_USD,USD_CAD,USD_CHF,USD_JPY --timeframe=daily --strat_param=use_level=no,use_db=yes
+
+
+!python q_pack/q_run/run_BT.py --fromdate='2016-1-1' --timeframe='w' --load_symbol='True' --strat_param "use_level=yes,use_db=yes,ml_serving=no"

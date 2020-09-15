@@ -60,11 +60,12 @@ def data_selector(symbol_id):
     df_all_ind=pd.DataFrame()
     for ind in ind_list:
         print(ind)
-        sql="select d.date_price as date, d.value from w_data d join symbol s on d.symbol_id = s.id join indicator i on i.id=d.indicator_id where s.ticker='%s' and i.name = '%s' and d.date_price > '%s'" %(symbol_id, ind, start_date)
+        sql="select d.date_price as date, d.value from d_data d join symbol s on d.symbol_id = s.id join indicator i on i.id=d.indicator_id where s.ticker='%s' and i.name = '%s' and d.date_price > '%s'" %(symbol_id, ind, start_date)
         df_indicator=pd.read_sql(sql,con=conn_indicator)
         df_indicator.set_index('date',inplace=True)
         df_indicator=pd.concat([df_indicator.drop(['value'], axis=1), df_indicator['value'].apply(pd.Series)], axis=1)
         df_indicator.columns=[ind+"_"+col for col in df_indicator.columns]
+        # df_indicator.to_csv(('data/'+ind+'.csv'))
         if df_all_ind.empty:
             df_all_ind=df_indicator
         else:
@@ -223,6 +224,7 @@ def updatePlot(securityValue):
     
     interested_feature='anomaly_vol_anomaly'
     df=data_selector(securityValue)
+    # df.to_csv("dash_test.csv")
     df_candle_1=df[-10:]
     df_candle_1=df_candle_1[df_candle_1['candle_1_pattern_name']!='']
     df_candle_1['pattern']='1'

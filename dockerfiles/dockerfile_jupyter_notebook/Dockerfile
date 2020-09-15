@@ -1,6 +1,6 @@
 # FROM jupyter/scipy-notebook
 # FROM jupyter/base-notebook
-FROM jupyter/scipy-notebook
+FROM jupyter/scipy-notebook:b2562c469cdd
 
 USER root
 

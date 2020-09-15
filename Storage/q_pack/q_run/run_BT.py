@@ -171,7 +171,7 @@ def parse_args(pargs=None):
     parser.add_argument('--load_symbol', required=False, default=False, type=args_parse_other.str2bool, const=True, nargs='?',
                     help='load the symbols from excel file')
 
-    parser.add_argument('--universe', required=False, default='',
+    parser.add_argument('--universe', required=False, default='Forex',
                         help='Select the Universe - Currently US Equity, Forex Majors')
 
     return parser.parse_args(pargs)
