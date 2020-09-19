@@ -143,7 +143,8 @@ services:
             - ./Storage/airflow/dags:/usr/local/airflow/dags
             - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
         ports:
-            - 8080:8080
+            # - 8080:8080
+            -80:80
         command: webserver
 
     dash:
@@ -167,28 +168,28 @@ services:
         # command:
         #     python app.py --host=0.0.0.0"
 
-    nginx:
-        image: nginx
-        container_name: "nginx_reverse"
-        volumes:
-            - ${WD}/nginx/:/etc/nginx/
-        ports:
-            - 80:80
-        depends_on:
-            - "jupyter-image"
-            - "airflow"
-            # - "mlflow-image"
-            - "pgadmin"
-            # - "superset"
-            - "minio-image"
-        links:
-            - "jupyter-image"
-            - "airflow"
-            # - "mlflow-image"
-            - "pgadmin"
-            # - "superset"
-            - "minio-image"
-        restart: always
+    # nginx:
+    #     image: nginx
+    #     container_name: "nginx_reverse"
+    #     volumes:
+    #         - ${WD}/nginx/:/etc/nginx/
+    #     ports:
+    #         - 80:80
+    #     depends_on:
+    #         - "jupyter-image"
+    #         - "airflow"
+    #         # - "mlflow-image"
+    #         - "pgadmin"
+    #         # - "superset"
+    #         - "minio-image"
+    #     links:
+    #         - "jupyter-image"
+    #         - "airflow"
+    #         # - "mlflow-image"
+    #         - "pgadmin"
+    #         # - "superset"
+    #         - "minio-image"
+    #     restart: always
 
 volumes:
     pg_data:
