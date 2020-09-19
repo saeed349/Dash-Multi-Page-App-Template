@@ -167,6 +167,29 @@ services:
         # command:
         #     python app.py --host=0.0.0.0"
 
+    nginx:
+        image: nginx
+        container_name: "nginx_reverse"
+        volumes:
+            - ${WD}/nginx/:/etc/nginx/
+        ports:
+            - 80:80
+        depends_on:
+            - "jupyter-image"
+            - "airflow"
+            # - "mlflow-image"
+            - "pgadmin"
+            # - "superset"
+            - "minio-image"
+        links:
+            - "jupyter-image"
+            - "airflow"
+            # - "mlflow-image"
+            - "pgadmin"
+            # - "superset"
+            - "minio-image"
+        restart: always
+
 volumes:
     pg_data:
         external: false
