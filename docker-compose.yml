@@ -114,7 +114,7 @@ services:
             - ./Storage/pgadmin/:/var/lib/pgadmin 
         ports:
             # - 80:1234
-            - 1234:1234
+            - 1234:1234 
         depends_on:
             - postgres_secmaster
     
@@ -145,7 +145,7 @@ services:
             - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
         ports:
             # - 8080:8080
-            - 80:8080
+            - 80:8080 # to be able to access it via firewall
             # -80:80
         command: webserver
 
