@@ -1,6 +1,8 @@
 FROM puckel/docker-airflow
-
-COPY requirements.txt /requirements.txt
+USER root
+#COPY requirements.txt /requirements.txt
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 
 ENV PYTHONPATH "${PYTHONPATH}:/usr/local/airflow/dags/q_pack"
 # For airflow container defining the environment variables in the docker compose doesnt work except for the airflow variables

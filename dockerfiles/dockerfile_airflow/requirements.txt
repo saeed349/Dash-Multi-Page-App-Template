@@ -10,3 +10,5 @@ sklearn
 twilio
 slackclient
 alpaca_trade_api
+flask-bcrypt
+apache-airflow[celery]

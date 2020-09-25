@@ -48,23 +48,23 @@ services:
             - "1000:8888"
 
     
-    # etl-image:
-    #     container_name: "etl-image"
-    #     build:
-    #         context: ./dockerfiles/dockerfile_etl
-    #     volumes:
-    #         - ./Storage/etl:/app
-    #         - ./Storage/q_pack:/app/q_pack
-    #     environment:
-    #         MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
-    #         AWS_ACCESS_KEY_ID: minio-image
-    #         AWS_SECRET_ACCESS_KEY: minio-image-pass    
-    #         MLFLOW_TRACKING_URI: http://mlflow-image:5500 
-    #         # PORT: '66'       
-    #     ports:    
-    #         - "8060:8060"
-    #     # command: gunicorn -w 1 -b :8060 app:app
-    #     command: gunicorn -c gunicorn_config.py -b :8060 app:app
+    etl-image:
+        container_name: "etl-image"
+        build:
+            context: ./dockerfiles/dockerfile_etl
+        volumes:
+            - ./Storage/etl:/app
+            - ./Storage/q_pack:/app/q_pack
+        environment:
+            MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
+            AWS_ACCESS_KEY_ID: minio-image
+            AWS_SECRET_ACCESS_KEY: minio-image-pass    
+            MLFLOW_TRACKING_URI: http://mlflow-image:5500 
+            # PORT: '66'       
+        ports:    
+            - "8060:8060"
+        # command: gunicorn -w 1 -b :8060 app:app
+        command: gunicorn -c gunicorn_config.py -b :8060 app:app
 
             
 
@@ -74,21 +74,21 @@ services:
         volumes:
             - redis:/data
 
-    # superset:
-    #     container_name: "superset"
-    #     build:
-    #         context: ./dockerfiles/dockerfile_superset
-    #     restart: always
-    #     depends_on:
-    #         - redis
-    #     environment:
-    #         MAPBOX_API_KEY: ${MAPBOX_API_KEY}
-    #         SUPERSET_HOME: /etc/superset
-    #     ports:
-    #         - "8088:8088"
-    #     volumes:
-    #         - ./Storage/superset/superset_config.py:/etc/superset/superset_config.py
-    #         - ./Storage/superset/superset.db:/var/lib/superset/superset.db              
+    # # superset:
+    # #     container_name: "superset"
+    # #     build:
+    # #         context: ./dockerfiles/dockerfile_superset
+    # #     restart: always
+    # #     depends_on:
+    # #         - redis
+    # #     environment:
+    # #         MAPBOX_API_KEY: ${MAPBOX_API_KEY}
+    # #         SUPERSET_HOME: /etc/superset
+    # #     ports:
+    # #         - "8088:8088"
+    # #     volumes:
+    # #         - ./Storage/superset/superset_config.py:/etc/superset/superset_config.py
+    # #         - ./Storage/superset/superset.db:/var/lib/superset/superset.db              
         
     postgres_secmaster: 
         image: postgres
