@@ -18,7 +18,17 @@ class PostgreSQL_Historical(DataBase):
         )
 
     def start(self):
-        sql = "select a.date_price date, a.open_price open, a.high_price high, a.low_price low, a.close_price as close, a.volume from " + self.p.db + "_data a inner join symbol b on a.symbol_id = b.id where b.ticker='"+ self.p.ticker + "' and a.date_price between '"+self.p.fromdate.strftime("%Y-%m-%d")+"' and '"+self.p.todate.strftime("%Y-%m-%d")+"' order by date ASC"
+        # sql = "select a.date_price date, a.open_price open, a.high_price high, a.low_price low, a.close_price as close, a.volume from " + self.p.db + "_data a inner join symbol b on a.symbol_id = b.id where b.ticker='"+ self.p.ticker + "' and a.date_price between '"+self.p.fromdate.strftime("%Y-%m-%d")+"' and '"+self.p.todate.strftime("%Y-%m-%d")+"' order by date ASC"
+        sql ="""select * from 
+        (
+        select a.date_price date, a.open_price open, a.high_price high, a.low_price low, a.close_price as close, a.volume,
+        row_number() over(partition by a.date_price, a.symbol_id order by a.created_date desc) as rn
+        from  {}_data a
+        inner join symbol b on a.symbol_id = b.id 
+        where b.ticker='{}' and a.date_price between '{}' and '{}' 
+        ) t
+        where t.rn = 1""".format(self.p.db,self.p.ticker,self.p.fromdate.strftime("%Y-%m-%d"),self.p.todate.strftime("%Y-%m-%d"))
+
         self.result = self.p.conn.execute(sql)
 
 

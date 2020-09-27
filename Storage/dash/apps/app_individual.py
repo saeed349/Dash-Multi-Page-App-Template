@@ -22,32 +22,50 @@ from app import app
 
 conn_indicator = psycopg2.connect(host=db_indicator_cred.dbHost , database=db_indicator_cred.dbName, user=db_indicator_cred.dbUser, password=db_indicator_cred.dbPWD)
 
-
-sql="""select * from (select symbol_id, min(date_price), max(date_price) from d_data group by symbol_id) a join symbol s on s.id=a.symbol_id """
-df_ticker_last_day=pd.read_sql(sql,con=conn_indicator)
+sql="select distinct instrument from symbol" # change it to exchange when you reload oanda
+df_instrument_type=pd.read_sql(sql,con=conn_indicator)
 
 layout = html.Div([
+    html.Div(
+        [
+            html.Div([dcc.Dropdown(id='dropdown-instrument',
+                    options=[{'label': i, 'value': i} for i in df_instrument_type['instrument'].unique()], multi=False, value="Forex")],
+            className='two columns'),
+            html.Div([dcc.Dropdown(id='dropdown-securities',
+                 options=[{'label': i, 'value': i} for i in ['']], multi=False, value="EUR_USD")],
+            className='two columns'),
+            html.Div([dcc.Dropdown(id='dropdown-timeframe',
+                 options=[{'label': i, 'value': i} for i in ['m','w','d','h4','h1','test']], multi=False, value="d")],
+            className='two columns'),
+    ],className='row'),    
+    html.Br(),
     html.Div([
         dcc.Graph(id="plot-candle")#,figure=Currentfig
     ],style = {'display': 'inline-block', 'width': '100%','height':'200%'},className='row'),
-    html.Div(
-        [
-            html.Div([dcc.Dropdown(id='dropdown-securities',
-                    options=[{'label': i, 'value': i} for i in df_ticker_last_day['ticker'].unique()], multi=False, value="EUR_USD")],className='two columns')               
-    ],className='row'),
-    html.Br(),
+
     dcc.Link('Go back to home', href='/')
 ])
 
+@app.callback(
+    Output('dropdown-securities', 'options'),
+    [Input('dropdown-instrument', 'value')]
+)
+def update_tickerdropdown(instrument_type):
+    # return none
+    sql="""select * from (select symbol_id, min(date_price), max(date_price) from d_data group by symbol_id) a join symbol s
+    on s.id=a.symbol_id where s.instrument='{}' """.format(instrument_type)
+    df_ticker_last_day=pd.read_sql(sql,con=conn_indicator)
+    return [{'label': i, 'value': i} for i in df_ticker_last_day['ticker'].unique()]
 
 @app.callback(
     Output('plot-candle', 'figure'),
-    [Input('dropdown-securities', 'value')]
+    [Input('dropdown-securities', 'value'),
+    Input('dropdown-timeframe','value')]
 )
-def updatePlot(securityValue):
+def updatePlot(symbol,timeframe):
     
     interested_feature='anomaly_vol_anomaly'
-    df=data_selector(securityValue)
+    df=data_selector(symbol,timeframe)
     df.to_csv("dash_test.csv")
     df_candle_1=df[-10:]
     df_candle_1=df_candle_1[df_candle_1['candle_1_pattern_name']!='']
@@ -111,10 +129,6 @@ def updatePlot(securityValue):
     layout['paper_bgcolor']="LightSteelBlue"
     layout['width']=2200
     layout['height']=1000
-    
-    
-
-
     fig = dict( data=data, layout=layout )
     return fig
 
@@ -137,7 +151,7 @@ def level_plot(df):
         sup_plot_ls.append(dict(x0=sup[2],x1=end_dt,y0=sup[0],y1=sup[1],yref='y1',opacity=.2,fillcolor='green',line=dict(color="black",width=1)))
     return (res_plot_ls+sup_plot_ls)
 
-def data_selector(symbol_id):
+def data_selector(symbol,timeframe):
     sql="select * from indicator"
     ind_list=list(pd.read_sql(sql,con=conn_indicator)['name'])
     start_date=datetime.datetime(2018,1,1).strftime("%Y-%m-%d")
@@ -145,7 +159,15 @@ def data_selector(symbol_id):
     df_all_ind=pd.DataFrame()
     for ind in ind_list:
         print(ind)
-        sql="select d.date_price as date, d.value from d_data d join symbol s on d.symbol_id = s.id join indicator i on i.id=d.indicator_id where s.ticker='%s' and i.name = '%s' and d.date_price > '%s'" %(symbol_id, ind, start_date)
+        sql="""select * from
+        (
+        select d.date_price as date,d.value, 
+        row_number() over(partition by d.date_price, d.symbol_id, d.indicator_id order by d.created_date desc) as rn
+        from {}_data d join symbol s on d.symbol_id = s.id join indicator i on i.id=d.indicator_id 
+        where s.ticker='{}' and i.name = '{}' and d.date_price > '{}'   
+        ) t
+        where t.rn = 1""".format(timeframe, symbol, ind, start_date)
+
         df_indicator=pd.read_sql(sql,con=conn_indicator)
         df_indicator.set_index('date',inplace=True)
         df_indicator=pd.concat([df_indicator.drop(['value'], axis=1), df_indicator['value'].apply(pd.Series)], axis=1)

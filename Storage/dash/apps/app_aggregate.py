@@ -70,6 +70,7 @@ layout = html.Div([
 ])
 
 
+
 @app.callback([Output('indicator_table', 'data'),
               Output('indicator_table', 'columns')],
               [Input('dropdown-instrument', 'value'),
@@ -77,7 +78,14 @@ layout = html.Div([
               Input('dropdown-indicator', 'value'),
               Input('date_picker', 'date')])
 def indicator_table(instrument,timeframe,indicator,date):
-    sql="select s.ticker, d.value, d.date_price as date from {}_data d join symbol s on d.symbol_id=s.id where s.instrument='{}' and d.indicator_id={} and date_price='{}'".format(timeframe,instrument,indicator,date)
+    sql="""select * from
+    (
+    select s.ticker, d.value, d.date_price as date,
+    row_number() over(partition by d.symbol_id, d.date_price, d.indicator_id order by d.created_date desc) as rn
+    from {}_data d join symbol s on d.symbol_id=s.id 
+    where s.instrument='{}' and d.indicator_id={} and date_price='{}'
+    ) t
+    where t.rn = 1""".format(timeframe,instrument,indicator,date)
     df_indicator=pd.read_sql(sql,con=conn_indicator)
     df_indicator=pd.concat([df_indicator.drop(['value'], axis=1), df_indicator['value'].apply(pd.Series)], axis=1)
     columns=[{"name": i, "id": i} for i in df_indicator.columns]
