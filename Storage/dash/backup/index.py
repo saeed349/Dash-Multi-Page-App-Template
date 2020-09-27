@@ -4,13 +4,13 @@ from dash.dependencies import Input, Output
 
 from app import app
 from apps import app_individual, app_aggregate
-
+    
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
     html.Div(id='page-content')
 ])
 
-index_page  = html.Div([
+app.layout = html.Div([
     dcc.Link('Individual Analysis', href='/individual'),
     html.Br(),
     dcc.Link('Agregrate Analysis', href='/agregrate'),
@@ -25,7 +25,7 @@ def display_page(pathname):
     elif pathname == '/agregrate':
         return app_aggregate.layout
     else:
-        return index_page
+        return '404'
 
 
 

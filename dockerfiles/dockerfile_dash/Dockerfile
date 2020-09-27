@@ -21,4 +21,4 @@ ENV PYTHONPATH "${PYTHONPATH}:/q_pack"
 
 RUN pip install -r requirements.txt
 ENTRYPOINT ["python"]
-CMD ["./app.py","--host=0.0.0.0"]
+CMD ["./index.py","--host=0.0.0.0"]
