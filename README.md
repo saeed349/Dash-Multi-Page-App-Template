@@ -207,3 +207,9 @@ This repository is available under the [BSD 3-Clause License](./LICENSE).
 * [Backtrader Oanda V20 Store](https://github.com/ftomassetti/backtrader-oandav20)
 * [Beyond Jupyter notebook - Udemy course](https://www.udemy.com/course/beyond-jupyter-notebooks/)
 * [Quantstart](https://www.quantstart.com/)
+
+
+docker-compose scale worker=5
+
+
+docker-compose -f "docker-compose.yml" up --build -d scale worker=1

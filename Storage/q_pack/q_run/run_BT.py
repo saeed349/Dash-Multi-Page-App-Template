@@ -39,8 +39,10 @@ def run(args=None):
             Key="interested_tickers_alpaca.xlsx"
         elif args.universe=='Forex':
             Key="interested_tickers_oanda.xlsx"
+        elif args.universe=='Indian Equity':
+            Key="interested_tickers_india.xlsx"
         read_file = s3.get_object(Bucket=Bucket, Key=Key)
-        df = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name="d")
+        df = pd.read_excel(io.BytesIO(read_file['Body'].read()),sheet_name="d") #,sep=','
         ticker_list = list(df['Tickers'])
     else:
         ticker_list=args.tickers[0].split(',')

@@ -104,8 +104,10 @@ services:
             - pg_data:/var/lib/postgresql/data
 
     pgadmin:
-        image: dpage/pgadmin4
-        container_name: "pgadmin"
+        image: dpage/pgadmin4:4.24
+        container_name: pgadmin
+        # build:
+        #     context: ./dockerfiles/dockerfile_pgadmin
         environment:
             # MASTER_PASSWORD_REQUIRED: "False"
             PGADMIN_DEFAULT_EMAIL: "guest"
@@ -113,8 +115,9 @@ services:
         volumes:
             - ./Storage/pgadmin/:/var/lib/pgadmin 
         ports:
-            # - 80:1234
-            - 1234:1234 
+            - 1234:80
+            # - 1234:1234
+            # - 1245:1245 
         depends_on:
             - postgres_secmaster
     
@@ -136,18 +139,70 @@ services:
         restart: always
         depends_on:
             - postgres
+            - redis
         environment:
             - LOAD_EX=n
-            - EXECUTOR=Local
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            # - EXECUTOR=Celery
+            - EXECUTOR=Local
+            - AIRFLOW__WEBSERVER__AUTHENTICATE=True
+            - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
         volumes:
             - ./Storage/airflow/dags:/usr/local/airflow/dags
             - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
         ports:
-            # - 8080:8080
-            - 80:8080 # to be able to access it via firewall
-            # -80:80
+            - 8080:8080
+            # - 80:8080
         command: webserver
+        # healthcheck:
+        #     test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+        #     interval: 30s
+        #     timeout: 30s
+        #     retries: 3
+
+    # flower:
+    #     image: airflow
+    #     container_name: "my_airflow_flower"
+    #     restart: always
+    #     depends_on:
+    #         - redis
+    #     environment:
+    #         - EXECUTOR=Celery
+    #         - AIRFLOW__WEBSERVER__AUTHENTICATE=True
+    #         - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
+    #     ports:
+    #         - "5555:5555"
+    #     command: flower --basic_auth=user1:password1
+
+    # scheduler:
+    #     image: airflow
+    #     container_name: "my_airflow_scheduler"
+    #     restart: always
+    #     depends_on:
+    #         - airflow
+    #     volumes:
+    #         - ./Storage/airflow/dags:/usr/local/airflow/dags
+    #         - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+    #     environment:
+    #         - LOAD_EX=n
+    #         - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+    #         - EXECUTOR=Celery
+    #     command: scheduler
+
+    # worker:
+    #     image: airflow
+    #     container_name: "my_airflow_worker"
+    #     restart: always
+    #     depends_on:
+    #         - scheduler
+    #     volumes:
+    #         - ./Storage/airflow/dags:/usr/local/airflow/dags
+    #         - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+    #     environment:
+    #         - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+    #         - EXECUTOR=Celery
+    #     command: worker
+
 
     dash:
         container_name: "dash"

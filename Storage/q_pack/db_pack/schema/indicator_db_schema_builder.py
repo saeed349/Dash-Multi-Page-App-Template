@@ -78,6 +78,7 @@ def create_mkt_tables(db_credential_info):
                     CREATE TABLE symbol (
                         id SERIAL PRIMARY KEY,
                         ticker TEXT NOT NULL,
+                        identifier TEXT NULL,
                         instrument TEXT NOT NULL,
                         name TEXT NOT NULL,
                         currency VARCHAR(64) NULL,

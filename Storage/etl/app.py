@@ -1,5 +1,6 @@
 import os
 import subprocess
+import time
 
 from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
@@ -81,6 +82,7 @@ class zerodha_api(Resource):
         parser.add_argument('userid', type=str)
         parser.add_argument('password', type=str)
         parser.add_argument('pin', type=str)
+        parser.add_argument('url', type=str)
         args = parser.parse_args()
 
         chrome_options = webdriver.ChromeOptions()
@@ -88,23 +90,23 @@ class zerodha_api(Resource):
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--disable-gpu')
         driver = webdriver.Chrome(chrome_options=chrome_options)
-        driver.implicitly_wait(10)
+        # driver.implicitly_wait(10)
         # self.driver.quit()
         # try:
-        driver.get('https://kite.trade/connect/login?api_key=6nhiah0oo8z8fzc1&v=3')
+        driver.get(args['url'])
+        time.sleep(3)
         username_textbox= driver.find_element_by_id("userid")
         username_textbox.send_keys(args['userid'])
-
         password_textbox= driver.find_element_by_id("password")
         password_textbox.send_keys(args['password'])
-
         driver.find_element_by_css_selector(".button-orange").click()
 
+        time.sleep(3)
         pin_textbox= driver.find_element_by_id("pin")
         pin_textbox.send_keys(args['pin'])
-
         driver.find_element_by_css_selector(".button-orange").click()
-
+        # driver.implicitly_wait(10)
+        time.sleep(3)
         url = driver.current_url
 
         return url
