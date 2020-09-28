@@ -151,8 +151,8 @@ services:
             - ./Storage/airflow/dags:/usr/local/airflow/dags
             - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
         ports:
-            - 8080:8080
-            # - 80:8080
+            # - 8080:8080
+            - 80:8080
         command: webserver
         # healthcheck:
         #     test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
