@@ -7,6 +7,7 @@ import boto3
 import io
 import pandas as pd
 from sqlalchemy import create_engine
+import psycopg2
 
 import btoandav20
 import pytz
@@ -78,6 +79,7 @@ def run(args=None):
         cerebro.addstrategy(globals()[args.strat_name].St, backtest=False)
 
     elif args.mode=='backtest':
+        # conn = psycopg2.connect(host=db_cred.dbHost , database=db_cred.dbName, user=db_cred.dbUser, password=db_cred.dbPWD)
         db_engine = create_engine('postgresql+psycopg2://'+db_cred.dbUser+':'+ db_cred.dbPWD +'@'+ db_cred.dbHost +'/'+ db_cred.dbName)
         conn = db_engine.connect()
         print(dkwargs)
