@@ -26,7 +26,10 @@ import q_tools.args_parse_other as args_parse_other
 import q_analyzers.bt_indicator_analyzer as bt_indicator_analyzer
 
 def run(args=None): 
-    args = parse_args(args)
+    if not args:
+        args = parse_args(args)
+        # args, unknown = parse_args.parse_known_args()
+
 
     cerebro = bt.Cerebro()
 
@@ -178,7 +181,10 @@ def parse_args(pargs=None):
     parser.add_argument('--universe', required=False, default='Forex',
                         help='Select the Universe - Currently US Equity, Forex Majors')
 
-    return parser.parse_args(pargs)
+    # return parser.parse_args(pargs)
+    args, unknown = parser.parse_known_args(pargs)
+    return args
+
 
 
 if __name__ == '__main__':

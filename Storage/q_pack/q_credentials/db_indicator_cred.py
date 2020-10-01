@@ -3,8 +3,8 @@
 # dbPWD="posgres349"
 # dbName="indicator_db"
 
-
-dbHost="db.equibrant.com"
+dbHost="34.74.230.164"
+# dbHost="db.equibrant.com"
 dbUser="smd"
 dbPWD="p4ssw0rd"
 dbName="indicator_db"

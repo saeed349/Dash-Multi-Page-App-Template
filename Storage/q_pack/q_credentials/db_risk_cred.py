@@ -3,7 +3,8 @@
 # dbPWD="posgres349"
 # dbName="risk_db"
 
-dbHost="db.equibrant.com"
+# dbHost="db.equibrant.com"
+dbHost="34.74.230.164"
 dbUser="smd"
 dbPWD="p4ssw0rd"
 dbName="risk_db"

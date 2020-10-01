@@ -143,8 +143,8 @@ services:
         environment:
             - LOAD_EX=n
             - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            # - EXECUTOR=Celery
-            - EXECUTOR=Local
+            - EXECUTOR=Celery
+            # - EXECUTOR=Local
             - AIRFLOW__WEBSERVER__AUTHENTICATE=True
             - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
         volumes:
@@ -154,54 +154,53 @@ services:
             # - 8080:8080
             - 80:8080
         command: webserver
-        # healthcheck:
-        #     test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
-        #     interval: 30s
-        #     timeout: 30s
-        #     retries: 3
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
 
-    # flower:
-    #     image: airflow
-    #     container_name: "my_airflow_flower"
-    #     restart: always
-    #     depends_on:
-    #         - redis
-    #     environment:
-    #         - EXECUTOR=Celery
-    #         - AIRFLOW__WEBSERVER__AUTHENTICATE=True
-    #         - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
-    #     ports:
-    #         - "5555:5555"
-    #     command: flower --basic_auth=user1:password1
+    flower:
+        image: airflow
+        restart: always
+        depends_on:
+            - redis
+        environment:
+            - EXECUTOR=Celery
+            - AIRFLOW__WEBSERVER__AUTHENTICATE=True
+            - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
+        ports:
+            - "5555:5555"
+        command: flower --basic_auth=user1:password1
 
-    # scheduler:
-    #     image: airflow
-    #     container_name: "my_airflow_scheduler"
-    #     restart: always
-    #     depends_on:
-    #         - airflow
-    #     volumes:
-    #         - ./Storage/airflow/dags:/usr/local/airflow/dags
-    #         - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
-    #     environment:
-    #         - LOAD_EX=n
-    #         - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-    #         - EXECUTOR=Celery
-    #     command: scheduler
+    scheduler:
+        image: airflow
+        restart: always
+        depends_on:
+            - airflow
+        volumes:
+            - ./Storage/airflow/dags:/usr/local/airflow/dags
+            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+        environment:
+            - LOAD_EX=n
+            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - EXECUTOR=Celery
+        command: scheduler
 
-    # worker:
-    #     image: airflow
-    #     container_name: "my_airflow_worker"
-    #     restart: always
-    #     depends_on:
-    #         - scheduler
-    #     volumes:
-    #         - ./Storage/airflow/dags:/usr/local/airflow/dags
-    #         - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
-    #     environment:
-    #         - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-    #         - EXECUTOR=Celery
-    #     command: worker
+    worker:
+        image: airflow
+        restart: always
+        depends_on:
+            - scheduler
+        volumes:
+            - ./Storage/airflow/dags:/usr/local/airflow/dags
+            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+
+        environment:
+            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - EXECUTOR=Celery
+            - C_FORCE_ROOT=true
+        command: worker
 
 
     dash:

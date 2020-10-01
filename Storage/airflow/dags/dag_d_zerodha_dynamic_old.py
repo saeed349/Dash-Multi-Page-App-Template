@@ -12,7 +12,6 @@ import boto3
 import io
 
 from db_pack.zerodha import zerodha_historical
-import q_run.run_BT_dynamic as run_BT_dynamic
 
 def create_dag(dag_id,
                schedule,
@@ -33,23 +32,24 @@ def create_dag(dag_id,
             task_id='clear',
             dag=dag
         )
-        number_of_dages = 4
         symbol_subset = 5
-
-        def chunker_list(seq, size):
-            return (seq[i::size] for i in range(size))
-        symbol_chunks=list(chunker_list(ticker_list,number_of_dages))
+        list_ticker_list = [ticker_list[x:x+symbol_subset] for x in range(0, len(ticker_list), symbol_subset)]
         tasks=[]
-        for i in range(len(symbol_chunks)):
-            symbols=symbol_chunks[i]
-            list_ticker_list = [symbols[x:x+symbol_subset] for x in range(0, len(symbols), symbol_subset)]
-            task=PythonOperator(task_id=(str(i)+'_DAG'),python_callable=run_BT_dynamic.dag_function,op_kwargs={'list_ticker_list':list_ticker_list})
-            tasks.append(task)   
+        for i in range(len(list_ticker_list)):
+            tickers=','.join(list_ticker_list[i])
+            final_command = """python /usr/local/airflow/dags/q_pack/q_run/run_BT.py --fromdate='2016-1-1' --timeframe='d' --tickers={}""".format(tickers)
+            print(final_command)
+            task = BashOperator(
+                bash_command=final_command,
+                task_id=(str(i)+"_run"),
+                dag=dag
+            )
+            tasks.append(task)    
         update_secmaster_db >> tasks >> clear
         return dag
 
 schedule = None #"@daily"
-dag_id = "zerodha_dynamic"
+dag_id = "zerodha_dynamic_old"
 universe='Indian Equity'
 s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
 Bucket="airflow-files"
