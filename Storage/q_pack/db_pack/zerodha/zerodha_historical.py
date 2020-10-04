@@ -57,7 +57,7 @@ def load_data(symbol, symbol_id, conn, start_date,freq,kite):
 
     print(start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
     # try:
-    data = pd.DataFrame(kite.historical_data(instrument_token=symbol,from_date=start_date.strftime("%Y-%m-%d"),to_date=end_date.strftime("%Y-%m-%d"),interval='day'))
+    data = pd.DataFrame(kite.historical_data(instrument_token=str(symbol),from_date=start_date.strftime("%Y-%m-%d"),to_date=end_date.strftime("%Y-%m-%d"),interval='day'))
     # data = pd.DataFrame(kite.historical_data(instrument_token=symbol,from_date=start_date.strftime("%Y-%m-%d"),interval='day'))
     data=data.set_index(pd.to_datetime(data['date']))
     if data.empty:
@@ -131,7 +131,7 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
         df_instruments=pd.DataFrame(kite.instruments())
         df_ticker_last_day=pd.merge(df_instruments,df_ticker_last_day,left_on='tradingsymbol',right_on='ticker',how='right')
         df_ticker_last_day=df_ticker_last_day.sort_values(by=['tradingsymbol','exchange']).drop_duplicates(subset=['tradingsymbol'],keep='last')
-
+        # df_ticker_last_day.to_csv('zerodha_ticker.csv')
         # Filling the empty dates returned from the DB with the initial start date
         df_ticker_last_day['last_date'].fillna(initial_start_date,inplace=True)
 
