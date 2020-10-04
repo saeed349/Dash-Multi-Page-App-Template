@@ -15,8 +15,10 @@ def zerodha_authentication(api_key,api_secret,userid,password,pin):
             r = requests.get(url=url,params=payload)
             access_token=regex_token.search(r.text).group(1)
         except:
+            print("DIDNT GET FUCKING TOKEN")
             time.sleep(3)
             pass    
+    print("HEREs you FUCKING ToKeNNN",access_token)
     data = kite.generate_session(access_token, api_secret=api_secret)
     kite.set_access_token(data["access_token"])
     return kite
