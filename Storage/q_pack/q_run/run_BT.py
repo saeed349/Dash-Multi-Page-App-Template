@@ -85,7 +85,8 @@ def run(args=None):
 
     elif args.mode=='backtest':
         # conn = psycopg2.connect(host=db_secmaster_cred.dbHost , database=db_secmaster_cred.dbName, user=db_secmaster_cred.dbUser, password=db_secmaster_cred.dbPWD)
-        db_engine = create_engine('postgresql+psycopg2://'+db_secmaster_cred.dbUser+':'+ db_secmaster_cred.dbPWD +'@'+ db_secmaster_cred.dbHost +'/'+ db_secmaster_cred.dbName)
+        # https://docs.sqlalchemy.org/en/13/core/pooling.html
+        db_engine = create_engine('postgresql+psycopg2://'+db_secmaster_cred.dbUser+':'+ db_secmaster_cred.dbPWD +'@'+ db_secmaster_cred.dbHost +'/'+ db_secmaster_cred.dbName,pool_size=20)
         conn = db_engine.connect()
         print(dkwargs)
         for ticker in ticker_list:
@@ -104,7 +105,7 @@ def run(args=None):
             elif args.timeframe == 'h4':
                 data = bt_datafeed_postgres.PostgreSQL_Historical(db=args.timeframe, conn=conn,ticker=ticker, name=ticker,**dkwargs,timeframe=bt.TimeFrame.Minutes, compression=240)
                 cerebro.adddata(data)
-        conn.close()
+        # conn.close()
         db_engine.dispose()
         cerebro.broker.setcash(args.cash)
         cerebro.addstrategy(globals()[args.strat_name].St, **args.strat_param,conn_indicator=conn_indicator)
