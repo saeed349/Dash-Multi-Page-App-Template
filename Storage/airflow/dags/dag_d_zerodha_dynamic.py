@@ -21,7 +21,7 @@ def create_dag(dag_id,
     dag = DAG(dag_id, default_args=default_args, schedule_interval=schedule)
     with dag:
 
-        update_secmaster_db = PythonOperator(task_id="update_secmaster_db",python_callable=zerodha_historical.main,op_kwargs={'freq':'d','initial_start_date':datetime(2016,1,1)})
+        # update_secmaster_db = PythonOperator(task_id="update_secmaster_db",python_callable=zerodha_historical.main,op_kwargs={'freq':'d','initial_start_date':datetime(2016,1,1)})
 
         init = BashOperator(
             bash_command='echo START' ,

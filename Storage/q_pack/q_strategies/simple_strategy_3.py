@@ -127,7 +127,7 @@ class St(bt.Strategy):
 
     def stop(self):
         print("Strategy run finished with Run ID:",self.db_run_id)
-        self.p.conn_indicator.close()
+        # self.p.conn_indicator.close()
         # pd.DataFrame(self.level_ind[0].indicator_list).to_csv("level_indicator.csv")
         # df=pd.DataFrame(self.level_ind[0].indicator_list).to_csv("level_indicator.csv")
 
