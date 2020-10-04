@@ -10,9 +10,9 @@ def dag_function(df):
             args=parse_args(fromdate=row['min_date'].strftime("%Y-%m-%d"),tickers=[row['ticker']])
             # print(args)
             run_BT.run(args)
-        except:
+        except Exception as e::
             print("COULDNT RUN BT on ",row['ticker'])
-            except Exception as e: print(e)
+            print(e)
             print()
         
 def parse_args(fromdate='2016-1-1',tickers=['RELIANCE']):
