@@ -19,23 +19,25 @@ tframes = {4:'m',#bt.TimeFrame.Minutes
             7:'m'}#bt.TimeFrame.Months
                 
 class indicator_analyzer(bt.Analyzer):
-
+    params = (
+        ('conn_secmaster', None),
+        ('conn_indicator', None)
+    )
     def __init__(self):
 
         self.trades = []
         self.cumprofit = 0.0
-        self.conn_secmaster = psycopg2.connect(host=db_secmaster_cred.dbHost , database=db_secmaster_cred.dbName, user=db_secmaster_cred.dbUser, password=db_secmaster_cred.dbPWD)
-        self.conn_indicator = psycopg2.connect(host=db_indicator_cred.dbHost , database=db_indicator_cred.dbName, user=db_indicator_cred.dbUser, password=db_indicator_cred.dbPWD)
+ 
         # symbols=[d._name for d in self.datas]
         # sql="""select ticker, instrument, name, currency,created_date from symbol where ticker in ({})""".format(str(symbols)[1:-1])
         # print("SYMBOLS=",symbols)
-        # df_symbols=pd.read_sql(sql,con=self.conn_indicator)
+        # df_symbols=pd.read_sql(sql,con=self.p.conn_indicator)
         # # print(len(df_symbols))
         # if df_symbols.empty:
         #     sql="select ticker, instrument, name, currency,created_date from symbol where ticker in ({})""".format(str(symbols)[1:-1])
-        #     df_symbols=pd.read_sql(sql,con=self.conn_secmaster)
+        #     df_symbols=pd.read_sql(sql,con=self.p.conn_secmaster)
         #     if ~df_symbols.empty:
-        #         write_db.write_db_dataframe(df=df_symbols, conn=self.conn_indicator, table='symbol')
+        #         write_db.write_db_dataframe(df=df_symbols, conn=self.p.conn_indicator, table='symbol')
 
     def get_analysis(self):
         return None
@@ -61,7 +63,7 @@ class indicator_analyzer(bt.Analyzer):
                     if d._timeframe == 4:
                         time_frame = 'h'+str(int(d._compression/60))
                     # print(d._timeframe,d._compression,time_frame)
-                    write_to_ind_db(sec_name=sec_name, ind_name=ind_name,ind_df=ind_df, time_frame=time_frame,conn_indicator=self.conn_indicator,conn_secmaster=self.conn_secmaster)
+                    write_to_ind_db(sec_name=sec_name, ind_name=ind_name,ind_df=ind_df, time_frame=time_frame,conn_indicator=self.p.conn_indicator,conn_secmaster=self.p.conn_secmaster)
 
 
 def write_to_ind_db(sec_name, ind_name, ind_df, time_frame, conn_secmaster,conn_indicator,period=0):

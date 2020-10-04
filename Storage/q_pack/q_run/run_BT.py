@@ -15,8 +15,9 @@ import pytz
 import q_datafeeds.bt_datafeed_postgres as bt_datafeed_postgres
 from q_strategies import *
 import q_credentials.oanda_cred as oanda_cred
-import q_credentials.db_secmaster_cred as db_cred
-# import q_credentials.db_secmaster_cred as db_cred
+import q_credentials.db_secmaster_cred as db_secmaster_cred
+import q_credentials.db_indicator_cred as db_indicator_cred
+# import q_credentials.db_secmaster_cred as db_secmaster_cred
 import q_analyzers.bt_strat_perform_analyzer as bt_strat_performance_analyzer
 import q_analyzers.bt_pos_perform_analyzer as bt_pos_performance_analyzer
 import q_analyzers.bt_transaction_analyzer as bt_trans_analyzer
@@ -65,13 +66,14 @@ def run(args=None):
     # cerebro.addanalyzer(bt_strategy_id_analyzer.strategy_id_analyzer,_name='strategy_id')
     # cerebro.addanalyzer(bt_strat_performance_analyzer.strat_performance_analyzer,_name='strat_perf')
     # cerebro.addanalyzer(bt_pos_performance_analyzer.pos_performance_analyzer,_name='pos_perf')
-    
+    conn_secmaster = psycopg2.connect(host=db_secmaster_cred.dbHost , database=db_secmaster_cred.dbName, user=db_secmaster_cred.dbUser, password=db_secmaster_cred.dbPWD)
+    conn_indicator = psycopg2.connect(host=db_indicator_cred.dbHost , database=db_indicator_cred.dbName, user=db_indicator_cred.dbUser, password=db_indicator_cred.dbPWD)
 
     if args.ml_log:
         cerebro.addanalyzer(bt_logger_analyzer.logger_analyzer,_name='ml_logger')
 
     if args.load_indicator_db:
-        cerebro.addanalyzer(bt_indicator_analyzer.indicator_analyzer,_name='indicator_db')
+        cerebro.addanalyzer(bt_indicator_analyzer.indicator_analyzer,_name='indicator_db',conn_secmaster=conn_secmaster,conn_indicator=conn_indicator)
 
     if args.mode=='live':
         oandastore = btoandav20.stores.OandaV20Store(token=args.broker_token, account=args.broker_account, practice=True)
@@ -82,8 +84,8 @@ def run(args=None):
         cerebro.addstrategy(globals()[args.strat_name].St, backtest=False)
 
     elif args.mode=='backtest':
-        # conn = psycopg2.connect(host=db_cred.dbHost , database=db_cred.dbName, user=db_cred.dbUser, password=db_cred.dbPWD)
-        db_engine = create_engine('postgresql+psycopg2://'+db_cred.dbUser+':'+ db_cred.dbPWD +'@'+ db_cred.dbHost +'/'+ db_cred.dbName)
+        # conn = psycopg2.connect(host=db_secmaster_cred.dbHost , database=db_secmaster_cred.dbName, user=db_secmaster_cred.dbUser, password=db_secmaster_cred.dbPWD)
+        db_engine = create_engine('postgresql+psycopg2://'+db_secmaster_cred.dbUser+':'+ db_secmaster_cred.dbPWD +'@'+ db_secmaster_cred.dbHost +'/'+ db_secmaster_cred.dbName)
         conn = db_engine.connect()
         print(dkwargs)
         for ticker in ticker_list:
