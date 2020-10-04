@@ -3,10 +3,10 @@ import argparse
 import q_tools.args_parse_other as args_parse_other
 import q_credentials.oanda_cred as oanda_cred
 
-def dag_function(df):
-    for i,row in df.iterrows():
+def dag_function(list_ticker_list):
+    for ticker_list in list_ticker_list:
         # print(ticker_list)
-        args=parse_args(fromdate=row['min_date'].strftime("%Y-%m-%d"),tickers=[row['ticker']])
+        args=parse_args(fromdate='2016-1-1',tickers=ticker_list)
         print(args)
         run_BT.run(args)
         

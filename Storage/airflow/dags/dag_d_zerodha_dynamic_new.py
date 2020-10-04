@@ -10,9 +10,17 @@ import json
 import pandas as pd
 import boto3
 import io
+import numpy as np
 
 from db_pack.zerodha import zerodha_historical
 import q_run.run_BT_dynamic as run_BT_dynamic
+
+import q_credentials.db_secmaster_cred as db_secmaster_cred
+import psycopg2
+db_host=db_secmaster_cred.dbHost 
+db_user=db_secmaster_cred.dbUser
+db_password=db_secmaster_cred.dbPWD
+db_name=db_secmaster_cred.dbName
 
 def create_dag(dag_id,
                schedule,
@@ -33,24 +41,19 @@ def create_dag(dag_id,
             task_id='clear',
             dag=dag
         )
-        number_of_dages = 4
-        symbol_subset = 5
-
-        def chunker_list(seq, size):
-            return (seq[i::size] for i in range(size))
-        symbol_chunks=list(chunker_list(ticker_list,number_of_dages))
+        number_of_dags = 4
+        # symbol_subset = 5
         tasks=[]
-        for i in range(len(symbol_chunks)):
-            symbols=symbol_chunks[i]
-            list_ticker_list = [symbols[x:x+symbol_subset] for x in range(0, len(symbols), symbol_subset)]
-            task=PythonOperator(task_id=(str(i)+'_DAG'),python_callable=run_BT_dynamic.dag_function,op_kwargs={'list_ticker_list':list_ticker_list})
+        sub_df=np.array_split(df_ticker_last_day, number_of_dags)
+        for i in range(len(sub_df)):
+            task=PythonOperator(task_id=(str(i)+'_DAG'),python_callable=run_BT_dynamic.dag_function,op_kwargs={'df':sub_df[i]})
             tasks.append(task)   
         # update_secmaster_db >> tasks >> clear
         init >> tasks >> clear
         return dag
 
 schedule = None #"@daily"
-dag_id = "zerodha_dynamic"
+dag_id = "zerodha_dynamic_new"
 universe='Indian Equity'
 s3 = boto3.client('s3',endpoint_url="http://minio-image:9000",aws_access_key_id="minio-image",aws_secret_access_key="minio-image-pass")
 Bucket="airflow-files"
@@ -62,9 +65,20 @@ elif universe=='Indian Equity':
     Key="interested_tickers_india.xlsx"
 read_file = s3.get_object(Bucket=Bucket, Key=Key)
 df = pd.read_excel(io.BytesIO(read_file['Body'].read()),sheet_name="d")
+
 ticker_list = list(df['Tickers'])
 
+# Getting the last date for each interested tickers
+conn = psycopg2.connect(host=db_host, database=db_name, user=db_user, password=db_password)
+sql="""select a.min_date, a.max_date, b.id as symbol_id, b.ticker from
+    (select min(date_price) as min_date, max(date_price) as max_date, symbol_id
+    from {}_data 
+    group by symbol_id) a right join symbol b on a.symbol_id = b.id 
+    where b.ticker in {} """.format('d',str(tuple(df['Tickers'])).replace(",)", ")"))
+df_ticker_last_day=pd.read_sql(sql,con=conn)
+
 df.fillna('', inplace=True)
+
 args = {
     'owner': 'airflow',
     'depends_on_past': False,
