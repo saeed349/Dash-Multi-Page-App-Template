@@ -120,7 +120,7 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
             group by symbol_id) a right join symbol b on a.symbol_id = b.id 
             where b.ticker in {} and b.data_vendor_id={}""".format(freq,str(tuple(df_tickers['Tickers'])).replace(",)", ")"),data_vendor_id)
         df_ticker_last_day=pd.read_sql(sql,con=conn)
-
+        df_ticker_last_day.to_csv('zerodha_ticker1.csv')
         kite = zerodha_authentication.zerodha_authentication(
         api_key=zerodha_cred.api_key,
         api_secret=zerodha_cred.api_secret,
@@ -131,7 +131,7 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
         df_instruments=pd.DataFrame(kite.instruments())
         df_ticker_last_day=pd.merge(df_instruments,df_ticker_last_day,left_on='tradingsymbol',right_on='ticker',how='right')
         df_ticker_last_day=df_ticker_last_day.sort_values(by=['tradingsymbol','exchange']).drop_duplicates(subset=['tradingsymbol'],keep='last')
-        # df_ticker_last_day.to_csv('zerodha_ticker.csv')
+        df_ticker_last_day.to_csv('zerodha_ticker2.csv')
         # Filling the empty dates returned from the DB with the initial start date
         df_ticker_last_day['last_date'].fillna(initial_start_date,inplace=True)
 
