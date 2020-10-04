@@ -85,9 +85,9 @@ def write_to_ind_db(sec_name, ind_name, ind_df, time_frame, conn_secmaster,conn_
         ind_dict={'name':ind_name,'period':period,'created_date':datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),'last_updated_date':datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
         ind_id=write_db.write_db_single(conn=conn_indicator, data_dict=ind_dict, table='indicator',return_col="id")
     data_table=time_frame+"_data"
-    print(data_table, ind_id, symbol_id,sec_name)
+    # print(data_table, ind_id, symbol_id,sec_name)
     sql="SELECT max(date_price) FROM %s WHERE indicator_id = %s and symbol_id = %s" %(data_table, ind_id, symbol_id)
-    print(sql)
+    # print(sql)
     latest_date=read_db.read_db_single(sql,conn_indicator)  
     if isinstance(latest_date, datetime.datetime):
         ind_df=ind_df[ind_df['date_price']>latest_date]

@@ -88,7 +88,7 @@ def run(args=None):
         # https://docs.sqlalchemy.org/en/13/core/pooling.html
         db_engine = create_engine('postgresql+psycopg2://'+db_secmaster_cred.dbUser+':'+ db_secmaster_cred.dbPWD +'@'+ db_secmaster_cred.dbHost +'/'+ db_secmaster_cred.dbName,pool_size=10,max_overflow=10)
         conn = db_engine.connect()
-        print(dkwargs)
+        # print(dkwargs)
         for ticker in ticker_list:
             if args.timeframe == 'd':
                 data = bt_datafeed_postgres.PostgreSQL_Historical(db=args.timeframe, conn=conn,ticker=ticker, name=ticker,**dkwargs) 
