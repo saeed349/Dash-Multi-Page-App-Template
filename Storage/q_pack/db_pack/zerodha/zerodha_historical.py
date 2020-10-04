@@ -141,10 +141,10 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
         # print(df_ticker_last_day)
         for i,stock in df_ticker_last_day.iterrows() :
             # download stock data and dump into daily_data table in our Postgres DB
-            last_date = stock['last_date']
-            symbol_id = stock['symbol_id']
-            symbol = int(stock['instrument_token'])
             try:
+                last_date = stock['last_date']
+                symbol_id = stock['symbol_id']
+                symbol = int(stock['instrument_token'])
                 print("Trying to Download-",str(symbol))
                 load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date, freq=freq,kite=kite)
             except:
