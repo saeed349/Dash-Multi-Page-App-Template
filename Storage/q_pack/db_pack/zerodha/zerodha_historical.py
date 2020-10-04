@@ -53,7 +53,7 @@ def load_data(symbol, symbol_id, conn, start_date,freq,kite):
     end_date = datetime.datetime.now()
     # if end_date.isoweekday() in set((6, 7)): # to take the nearest weekday
     #     end_date -= datetime.timedelta(days=end_date.isoweekday() % 5)
-    end_date -= datetime.timedelta(days=1) # temporary
+    # end_date -= datetime.timedelta(days=1) # temporary
 
     print(start_date.strftime("%Y-%m-%dT%H:%M:%SZ"),end_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
     # try:
