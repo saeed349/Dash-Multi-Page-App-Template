@@ -12,6 +12,8 @@ def dag_function(df):
             run_BT.run(args)
         except:
             print("COULDNT RUN BT on ",row['ticker'])
+            except Exception as e: print(e)
+            print()
         
 def parse_args(fromdate='2016-1-1',tickers=['RELIANCE']):
     parser = argparse.ArgumentParser(   
