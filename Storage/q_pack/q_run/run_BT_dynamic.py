@@ -6,14 +6,14 @@ import q_credentials.oanda_cred as oanda_cred
 def dag_function(df):
     for i,row in df.iterrows():
         # print(ticker_list)
-        try:
-            args=parse_args(fromdate=row['min_date'].strftime("%Y-%m-%d"),tickers=[row['ticker']])
+        # try:
+        args=parse_args(fromdate=row['min_date'].strftime("%Y-%m-%d"),tickers=[row['ticker']])
             # print(args)
-            run_BT.run(args)
-        except Exception as e:
-            print("COULDNT RUN BT on ",row['ticker'])
-            print(e)
-            print()
+        run_BT.run(args)
+        # except Exception as e:
+        #     print("COULDNT RUN BT on ",row['ticker'])
+        #     print(e)
+        #     print()
         
 def parse_args(fromdate='2016-1-1',tickers=['RELIANCE']):
     parser = argparse.ArgumentParser(   
