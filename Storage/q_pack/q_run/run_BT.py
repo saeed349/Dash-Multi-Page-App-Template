@@ -86,7 +86,7 @@ def run(args=None):
     elif args.mode=='backtest':
         # conn = psycopg2.connect(host=db_secmaster_cred.dbHost , database=db_secmaster_cred.dbName, user=db_secmaster_cred.dbUser, password=db_secmaster_cred.dbPWD)
         # https://docs.sqlalchemy.org/en/13/core/pooling.html
-        db_engine = create_engine('postgresql+psycopg2://'+db_secmaster_cred.dbUser+':'+ db_secmaster_cred.dbPWD +'@'+ db_secmaster_cred.dbHost +'/'+ db_secmaster_cred.dbName)#,pool_size=10,max_overflow=10)
+        db_engine = create_engine('postgresql+psycopg2://'+db_secmaster_cred.dbUser+':'+ db_secmaster_cred.dbPWD +'@'+ db_secmaster_cred.dbHost +'/'+ db_secmaster_cred.dbName,pool_size=20,max_overflow=0)#,pool_size=10,max_overflow=10)
         conn = db_engine.connect()
         # print(dkwargs)
         for ticker in ticker_list:
