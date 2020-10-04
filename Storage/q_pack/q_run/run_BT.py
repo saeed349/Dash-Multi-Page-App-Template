@@ -121,7 +121,9 @@ def run(args=None):
     strats = results
     if args.plot:
         cerebro.plot(style='candlestick',iplot=False,volume=False)
-   
+    
+    conn_secmaster.close()
+    conn_indicator.close()
 
 
 def parse_args(pargs=None):

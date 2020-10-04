@@ -119,7 +119,11 @@ class Level_Indicator(bt.Indicator):
     #                     s_in=dict(color='green'),
     #                     r_in=dict(color='red'))
 
-    params = (('disp',False),('use_db',True))
+    params = (
+    ('disp',False),
+    ('use_db',True),
+    ('conn_indicator',None)
+    )
 
     
     def __init__(self):
@@ -145,17 +149,17 @@ class Level_Indicator(bt.Indicator):
         # self.in_sup_range=0
         self.latest_db_date = datetime.datetime(2000, 1, 1)
         self.indicator_df = pd.DataFrame()
-        conn_indicator = psycopg2.connect(host=db_indicator_cred.dbHost , database=db_indicator_cred.dbName, user=db_indicator_cred.dbUser, password=db_indicator_cred.dbPWD)     
+        # self.p.conn_indicator = psycopg2.connect(host=db_indicator_cred.dbHost , database=db_indicator_cred.dbName, user=db_indicator_cred.dbUser, password=db_indicator_cred.dbPWD)     
         sec_name=self.data._name 
         if self.params.use_db:
             try:
                 ind_name='level'
                 sql="SELECT id FROM symbol WHERE ticker = '"+sec_name+"'"
-                symbol_id=read_db.read_db_single(sql,conn_indicator)
+                symbol_id=read_db.read_db_single(sql,self.p.conn_indicator)
                 sql="SELECT id FROM indicator WHERE name = '"+ind_name+"'"
-                ind_id=read_db.read_db_single(sql,conn_indicator)   
+                ind_id=read_db.read_db_single(sql,self.p.conn_indicator)   
                 sql="SELECT date_price, value FROM daily_data WHERE indicator_id = %s and symbol_id = %s" %(ind_id, symbol_id)
-                self.indicator_df=pd.read_sql(sql,conn_indicator) 
+                self.indicator_df=pd.read_sql(sql,self.p.conn_indicator) 
                 self.indicator_df.set_index('date_price',inplace=True)
                 self.indicator_df=pd.concat([self.indicator_df.drop(['value'], axis=1), self.indicator_df['value'].apply(pd.Series)], axis=1)
                 # print("got data")

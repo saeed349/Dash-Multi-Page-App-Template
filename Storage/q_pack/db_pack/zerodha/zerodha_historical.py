@@ -140,6 +140,7 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
         print (datetime.datetime.now() - startTime)
         # print(df_ticker_last_day)
         for i,stock in df_ticker_last_day.iterrows() :
+            print("Symbol Number Currently Downloading",i)
             # download stock data and dump into daily_data table in our Postgres DB
             try:
                 last_date = stock['last_date']

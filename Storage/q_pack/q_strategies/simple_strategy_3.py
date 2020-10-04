@@ -10,7 +10,7 @@ import q_indicators.Level_Indicator_sr_plot as Level_Indicator_sr_plot
 import q_indicators.Custom_Fractal as Custom_Fractal
 import q_indicators.Anomaly_Indicator as Anomaly_Indicator
 import mlflow.pyfunc
-
+import q_credentials.db_indicator_cred as db_indicator_cred
 class St(bt.Strategy):
     alias = 'Simple Strategy'
     params = dict(
@@ -31,6 +31,7 @@ class St(bt.Strategy):
 
     def __init__(self): 
         self.db_run_id = None
+        self.conn_indicator = psycopg2.connect(host=db_indicator_cred.dbHost , database=db_indicator_cred.dbName, user=db_indicator_cred.dbUser, password=db_indicator_cred.dbPWD) 
         # self.rsi = [bt.indicators.RSI(d, period=30) for d in self.datas]
 
         # self.stoc = [bt.indicators.Stochastic(d, period=20) for d in self.datas]
@@ -58,7 +59,7 @@ class St(bt.Strategy):
 
         if self.p.use_level=='yes':
             # print("using level indicator")
-            self.level_ind = [Level_Indicator.Level_Indicator(d,disp=True,use_db=True if self.p.use_db=='yes' else False) for d in self.datas]
+            self.level_ind = [Level_Indicator.Level_Indicator(d,disp=True,use_db=True if self.p.use_db=='yes' else False,conn_indicator=self.conn_indicator) for d in self.datas]
             for i in self.level_ind:
                 i.aliased='level'
 
@@ -125,6 +126,7 @@ class St(bt.Strategy):
 
     def stop(self):
         print("Strategy run finished with Run ID:",self.db_run_id)
+        self.conn_indicator.close()
         # pd.DataFrame(self.level_ind[0].indicator_list).to_csv("level_indicator.csv")
         # df=pd.DataFrame(self.level_ind[0].indicator_list).to_csv("level_indicator.csv")
 
