@@ -104,10 +104,10 @@ def run(args=None):
             elif args.timeframe == 'h4':
                 data = bt_datafeed_postgres.PostgreSQL_Historical(db=args.timeframe, conn=conn,ticker=ticker, name=ticker,**dkwargs,timeframe=bt.TimeFrame.Minutes, compression=240)
                 cerebro.adddata(data)
-    
+        conn.close()
         db_engine.dispose()
         cerebro.broker.setcash(args.cash)
-        cerebro.addstrategy(globals()[args.strat_name].St, **args.strat_param)
+        cerebro.addstrategy(globals()[args.strat_name].St, **args.strat_param,conn_indicator=conn_indicator)
  
 
     cerebro.addsizer(bt.sizers.FixedSize, stake=1000)
