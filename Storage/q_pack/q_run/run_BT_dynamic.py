@@ -2,12 +2,15 @@ import q_run.run_BT as run_BT
 import argparse
 import q_tools.args_parse_other as args_parse_other
 import q_credentials.oanda_cred as oanda_cred
+from dateutil.relativedelta import relativedelta
 
 def dag_function(df):
     for i,row in df.iterrows():
         # print(ticker_list)
         # try:
-        args=parse_args(fromdate=row['min_date'].strftime("%Y-%m-%d"),tickers=[row['ticker']])
+        start_date=(row['min_date']+relativedelta(months=1)).strftime("%Y-%m-%d")
+
+        args=parse_args(fromdate=start_date,tickers=[row['ticker']])
             # print(args)
         run_BT.run(args)
         # except Exception as e:
