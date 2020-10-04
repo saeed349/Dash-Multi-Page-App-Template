@@ -143,7 +143,7 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
             # download stock data and dump into daily_data table in our Postgres DB
             last_date = stock['last_date']
             symbol_id = stock['symbol_id']
-            symbol = stock['instrument_token']
+            symbol = int(stock['instrument_token'])
             try:
                 print("Trying to Download-",str(symbol))
                 load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date, freq=freq,kite=kite)
