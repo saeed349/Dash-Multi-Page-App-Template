@@ -23,11 +23,11 @@ def create_dag(dag_id,
 
         update_secmaster_db = PythonOperator(task_id="update_secmaster_db",python_callable=zerodha_historical.main,op_kwargs={'freq':'d','initial_start_date':datetime(2016,1,1)})
 
-        # init = BashOperator(
-        #     bash_command='echo START' ,
-        #     task_id='Init',
-        #     dag=dag
-        # )
+        init = BashOperator(
+            bash_command='echo START' ,
+            task_id='Init',
+            dag=dag
+        )
         clear = BashOperator(
             bash_command='echo STOPPING',
             task_id='clear',
@@ -45,7 +45,8 @@ def create_dag(dag_id,
             list_ticker_list = [symbols[x:x+symbol_subset] for x in range(0, len(symbols), symbol_subset)]
             task=PythonOperator(task_id=(str(i)+'_DAG'),python_callable=run_BT_dynamic.dag_function,op_kwargs={'list_ticker_list':list_ticker_list})
             tasks.append(task)   
-        update_secmaster_db >> tasks >> clear
+        # update_secmaster_db >> tasks >> clear
+        init >> tasks >> clear
         return dag
 
 schedule = None #"@daily"
