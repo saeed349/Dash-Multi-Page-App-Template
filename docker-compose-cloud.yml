@@ -31,21 +31,21 @@ services:
     #     command: mlflow server --host 0.0.0.0 --port 5500 --backend-store-uri /mlflow-image/mlruns 
 
 
-    # jupyter-image:
-    #     container_name: "jupyter-image"
-    #     build:
-    #         context: ./dockerfiles/dockerfile_jupyter_notebook
-    #     volumes:
-    #         - ./Storage/notebooks:/home/jovyan/work
-    #         - ./Storage/q_pack:/home/jovyan/work/q_pack
-    #         - ./Storage/mlflow:/mlflow-image
-    #     environment:
-    #         MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
-    #         AWS_ACCESS_KEY_ID: minio-image
-    #         AWS_SECRET_ACCESS_KEY: minio-image-pass    
-    #         MLFLOW_TRACKING_URI: http://mlflow-image:5500        
-    #     ports:    
-    #         - "1000:8888"
+    jupyter-image:
+        container_name: "jupyter-image"
+        build:
+            context: ./dockerfiles/dockerfile_jupyter_notebook
+        volumes:
+            - ./Storage/notebooks:/home/jovyan/work
+            - ./Storage/q_pack:/home/jovyan/work/q_pack
+            - ./Storage/mlflow:/mlflow-image
+        environment:
+            MLFLOW_S3_ENDPOINT_URL: http://minio-image:9000
+            AWS_ACCESS_KEY_ID: minio-image
+            AWS_SECRET_ACCESS_KEY: minio-image-pass    
+            MLFLOW_TRACKING_URI: http://mlflow-image:5500        
+        ports:    
+            - "1000:8888"
 
     
     etl-image:
