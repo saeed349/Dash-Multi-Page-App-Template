@@ -125,7 +125,8 @@ def run(args=None):
     
     conn_secmaster.close()
     conn_indicator.close()
-
+    if conn:
+        conn.close()
 
 def parse_args(pargs=None):
     parser = argparse.ArgumentParser(   
