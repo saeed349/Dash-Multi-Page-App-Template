@@ -36,20 +36,6 @@ import q_tools.read_db as read_db
 import q_tools.write_db as write_db
 MASTER_LIST_FAILED_SYMBOLS = []
 
-def obtain_list_db_tickers(conn, vendor_name):
-    with conn:
-        cur = conn.cursor()
-        cur.execute("SELECT s.id, s.ticker FROM symbol s INNER JOIN data_vendor v ON (s.data_vendor_id = v.id) where v.name = %s", (vendor_name,)) 
-        data = cur.fetchall()
-        return [(d[0], d[1]) for d in data]
-
-def fetch_data_vendor_id(vendor, conn):
-    cur = conn.cursor()
-    cur.execute("SELECT id FROM data_vendor WHERE name = %s", (vendor,))
-    data_vendor_id = cur.fetchall()
-    data_vendor_id = data_vendor_id[0][0]
-    return data_vendor_id
-
 def load_data(symbol, symbol_id, conn, start_date,freq):
     api = tradeapi.REST(alpaca_cred.api_key, alpaca_cred.secret_key)
 
@@ -97,7 +83,6 @@ def load_data(symbol, symbol_id, conn, start_date,freq):
         write_db.write_db_dataframe(df=newDF, conn=conn, table=(freq+'_data')) 
         print('{} complete!'.format(symbol))
 
-
 def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
     if type(initial_start_date)==str:
         datetime.datetime.strptime(initial_start_date, "%m-%d-%Y")  
@@ -117,7 +102,7 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
     Bucket="airflow-files"
     Key="interested_tickers_alpaca.xlsx"
     read_file = s3.get_object(Bucket=Bucket, Key=Key)
-    df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sep=',',sheet_name=freq)
+    df_tickers = pd.read_excel(io.BytesIO(read_file['Body'].read()),sheet_name=freq)
 
     if df_tickers.empty:
         print("Empty Ticker List")

@@ -1,3 +1,6 @@
+
+# docker exec -it my_airflow python /usr/local/airflow/dags/q_pack/q_tools/airflow_authentication.py
+# docker exec -it microservices-based-algorithmic-trading-system_airflow_1 python
 from airflow import models, settings
 from airflow.contrib.auth.backends.password_auth import PasswordUser
 from sqlalchemy import create_engine
@@ -10,3 +13,4 @@ session = settings.Session(bind=engine)
 session.add(user)
 session.commit()
 exit()
+

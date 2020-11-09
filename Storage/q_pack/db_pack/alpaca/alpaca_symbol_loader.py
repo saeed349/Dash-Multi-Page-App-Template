@@ -24,7 +24,7 @@ def insert_symbols(conn,data_vendor_id):
     active_assets = api.list_assets(status='active')
     symbols = []
     for symbol in active_assets:
-        if symbol.exchange=='NASDAQ':
+        if symbol.exchange=='NASDAQ' or symbol.exchange=='NYSE':
             symbols.append({'ticker':symbol.symbol,'exchange':symbol.exchange,'instrument':'us_equity','name':symbol.name,'data_vendor_id':data_vendor_id,'currency':'USD','shortable':symbol.shortable,'easy_to_borrow':symbol.easy_to_borrow,'marginable':symbol.marginable,'tradable':symbol.tradable,'created_date':now,'last_updated_date':now})
 
     df=pd.DataFrame(symbols)

@@ -104,7 +104,8 @@ services:
             - pg_data:/var/lib/postgresql/data
 
     pgadmin:
-        image: dpage/pgadmin4:4.24
+        # image: dpage/pgadmin4:4.24
+        image : dpage/pgadmin4:4.18
         container_name: pgadmin
         # build:
         #     context: ./dockerfiles/dockerfile_pgadmin
@@ -112,10 +113,11 @@ services:
             # MASTER_PASSWORD_REQUIRED: "False"
             PGADMIN_DEFAULT_EMAIL: "guest"
             PGADMIN_DEFAULT_PASSWORD: "guest"
+            PGADMIN_LISTEN_PORT: 1234
         volumes:
             - ./Storage/pgadmin/:/var/lib/pgadmin 
         ports:
-            - 1234:80
+            - 1234:1234
             # - 1234:1234
             # - 1245:1245 
         depends_on:
@@ -257,3 +259,6 @@ volumes:
     redis:
         external: false
         name: redis
+
+
+        # docker-compose up -d --scale worker=5

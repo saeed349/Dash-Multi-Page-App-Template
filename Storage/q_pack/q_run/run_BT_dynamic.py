@@ -4,19 +4,22 @@ import q_tools.args_parse_other as args_parse_other
 import q_credentials.oanda_cred as oanda_cred
 from dateutil.relativedelta import relativedelta
 
-def dag_function(df):
+def dag_function(df,time_frame='d'):
     for i,row in df.iterrows():
         # print(ticker_list)
         # try:
-        start_date=(row['min_date']+relativedelta(months=1)).strftime("%Y-%m-%d")
-        args=parse_args(fromdate=start_date,tickers=[row['ticker']])
-        run_BT.run(args)
-        # # except Exception as e:
+        #     start_date=(row['min_date']+relativedelta(months=1)).strftime("%Y-%m-%d")
+        #     args=parse_args(fromdate=start_date,tickers=[row['ticker']],time_frame=time_frame)
+        #     run_BT.run(args)
+        # except Exception as e:
         #     print("COULDNT RUN BT on ",row['ticker'])
         #     print(e)
         #     print()
-        
-def parse_args(fromdate='2016-1-1',tickers=['RELIANCE']):
+        start_date=(row['min_date']+relativedelta(months=1)).strftime("%Y-%m-%d")
+        args=parse_args(fromdate=start_date,tickers=[row['ticker']],time_frame=time_frame)
+        run_BT.run(args)
+
+def parse_args(fromdate='2016-1-1',tickers=['RELIANCE'],time_frame='d'):
     parser = argparse.ArgumentParser(   
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description=('Rebalancing with the Conservative Formula'),
@@ -24,7 +27,7 @@ def parse_args(fromdate='2016-1-1',tickers=['RELIANCE']):
     parser.add_argument('--tickers', nargs='*' ,required=False,default=tickers, type=str,  #['PZZA'] #['BOM500010,BOM500034,BOM500087']
                         help='Pass the tickers with space')
     
-    parser.add_argument('--timeframe', required=False, default='d',
+    parser.add_argument('--timeframe', required=False, default=time_frame,
                         help='Timeframe at whic the strategy needs to be run at')
 
     parser.add_argument('--dargs', default='',
