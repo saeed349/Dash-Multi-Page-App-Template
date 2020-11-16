@@ -86,7 +86,7 @@ def create_mkt_tables(db_credential_info):
                         )
                     """,
                     """
-                    CREATE TABLE m1_data (
+                    CREATE TABLE m_data (
                         id SERIAL PRIMARY KEY,
                         indicator_id INTEGER NOT NULL,
                         symbol_id INTEGER NOT NULL,
