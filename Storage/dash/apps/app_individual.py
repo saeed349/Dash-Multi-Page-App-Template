@@ -66,7 +66,7 @@ def updatePlot(symbol,timeframe):
     
     interested_feature='anomaly_vol_anomaly'
     df=data_selector(symbol,timeframe)
-    df.to_csv("dash_test.csv")
+
     df_candle_1=df[-10:]
     df_candle_1=df_candle_1[df_candle_1['candle_1_pattern_name']!='']
     df_candle_1['pattern']='1'
@@ -175,11 +175,14 @@ def data_selector(symbol,timeframe):
         # df_indicator.to_csv(('data/'+ind+'.csv'))
         if df_all_ind.empty:
             df_all_ind=df_indicator
-        else:
+        elif not df_indicator.empty:
             df_all_ind=pd.merge(left=df_all_ind, right=df_indicator,on='date')
-
+            # df_all_ind.to_csv(('data/final'+ind+'.csv'))
+        else:
+            pass
     df_all_ind.rename(columns={'anomaly_close':'close','anomaly_low':'low','anomaly_high':'high','anomaly_open':'open','anomaly_volume':'volume'},inplace=True)
     # df_all_ind.set_index('date',inplace=True)
+    # df_all_ind.to_csv("data/dash_final_indicators.csv")
     df_all_ind.sort_values(by=['date'],inplace=True) # because the candlestick plotly figure consider the date as categorical
     return df_all_ind
 
