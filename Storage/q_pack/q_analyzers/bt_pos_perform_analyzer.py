@@ -19,7 +19,7 @@ class pos_performance_analyzer(bt.Analyzer):
 
         self.trades = []
         self.cumprofit = 0.0
-        self.conn = psycopg2.connect(host=db_risk_cred.dbHost , database=db_risk_cred.dbName, user=db_risk_cred.dbUser, password=db_risk_cred.dbPWD)
+        # self.conn = psycopg2.connect(host=db_risk_cred.dbHost , database=db_risk_cred.dbName, user=db_risk_cred.dbUser, password=db_risk_cred.dbPWD)
 
     def notify_trade(self, trade):
 
@@ -69,5 +69,8 @@ class pos_performance_analyzer(bt.Analyzer):
                  'nbars': barlen, 'pnl_per_bar': round(pbar, 2),
                  'mfe_percentage': round(mfe, 2), 'mae_percentage': round(mae, 2)}
 
-            write_to_db.write_to_db(conn=self.conn, data_dict=analyzer_result, table='position_performance')  
+            # write_to_db.write_to_db(conn=self.conn, data_dict=analyzer_result, table='position_performance')  
             self.trades.append(analyzer_result)
+
+    def get_analysis(self):
+        return self.trades

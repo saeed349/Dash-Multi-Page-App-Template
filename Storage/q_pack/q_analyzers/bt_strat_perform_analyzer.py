@@ -18,7 +18,7 @@ class strat_performance_analyzer(bt.Analyzer):
 
     def __init__(self):
         self.performance = {}
-        self.conn = psycopg2.connect(host=db_risk_cred.dbHost , database=db_risk_cred.dbName, user=db_risk_cred.dbUser, password=db_risk_cred.dbPWD)
+        # self.conn = psycopg2.connect(host=db_risk_cred.dbHost , database=db_risk_cred.dbName, user=db_risk_cred.dbUser, password=db_risk_cred.dbPWD)
         self.analyzer_sharpe = bt.analyzers.SharpeRatio()
         self.analyzer_returns = bt.analyzers.Returns()
         self.analyzer_sqn = bt.analyzers.SQN()
@@ -43,7 +43,7 @@ class strat_performance_analyzer(bt.Analyzer):
         self.performance['max_draw_val']=self.analyzer_drawdown.get_analysis()['max']['moneydown']
         self.performance['max_draw_len']=self.analyzer_drawdown.get_analysis()['max']['len']
 
-        write_to_db.write_to_db(conn=self.conn, data_dict=self.performance, table='strategy_performance')
+        # write_to_db.write_to_db(conn=self.conn, data_dict=self.performance, table='strategy_performance')
 
 
     def get_analysis(self):
