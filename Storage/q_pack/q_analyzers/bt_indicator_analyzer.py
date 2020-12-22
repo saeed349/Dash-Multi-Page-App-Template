@@ -21,7 +21,8 @@ tframes = {4:'m',#bt.TimeFrame.Minutes
 class indicator_analyzer(bt.Analyzer):
     params = (
         ('conn_secmaster', None),
-        ('conn_indicator', None)
+        ('conn_indicator', None),
+        ('write_only_updated',True)
     )
     def __init__(self):
 
@@ -63,10 +64,10 @@ class indicator_analyzer(bt.Analyzer):
                     if d._timeframe == 4:
                         time_frame = 'h'+str(int(d._compression/60))
                     # print(d._timeframe,d._compression,time_frame)
-                    write_to_ind_db(sec_name=sec_name, ind_name=ind_name,ind_df=ind_df, time_frame=time_frame,conn_indicator=self.p.conn_indicator,conn_secmaster=self.p.conn_secmaster)
+                    write_to_ind_db(write_only_updated=self.p.write_only_updated,sec_name=sec_name, ind_name=ind_name,ind_df=ind_df, time_frame=time_frame,conn_indicator=self.p.conn_indicator,conn_secmaster=self.p.conn_secmaster)
 
 
-def write_to_ind_db(sec_name, ind_name, ind_df, time_frame, conn_secmaster,conn_indicator,period=0):
+def write_to_ind_db(write_only_updated,sec_name, ind_name, ind_df, time_frame, conn_secmaster,conn_indicator,period=0):
 
     # loading the data into the symbol table if its not alrady there
     sql="""select * from symbol where ticker='{}'""".format(sec_name)
@@ -86,12 +87,14 @@ def write_to_ind_db(sec_name, ind_name, ind_df, time_frame, conn_secmaster,conn_
         ind_id=write_db.write_db_single(conn=conn_indicator, data_dict=ind_dict, table='indicator',return_col="id")
     data_table=time_frame+"_data"
     # print(data_table, ind_id, symbol_id,sec_name)
-    sql="SELECT max(date_price) FROM %s WHERE indicator_id = %s and symbol_id = %s" %(data_table, ind_id, symbol_id)
-    # print(sql)
-    latest_date=read_db.read_db_single(sql,conn_indicator)  
-    if isinstance(latest_date, datetime.datetime):
-        ind_df=ind_df[ind_df['date_price']>latest_date]
-    # print(len(ind_df))
+    if write_only_updated:
+        sql="SELECT max(date_price) FROM %s WHERE indicator_id = %s and symbol_id = %s" %(data_table, ind_id, symbol_id)
+        print("CUTTING DATA OFF")
+        latest_date=read_db.read_db_single(sql,conn_indicator)  
+        if isinstance(latest_date, datetime.datetime):
+            ind_df=ind_df[ind_df['date_price']>latest_date]
+    print("WRITING THE INDICATOR DATA")
+    ind_df.to_csv('to_write_indicator.csv')
     ind_df['symbol_id'] = symbol_id
     ind_df['indicator_id'] = ind_id
     ind_df['created_date'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

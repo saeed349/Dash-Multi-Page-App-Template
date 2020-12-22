@@ -73,9 +73,14 @@ def merging_levels(level,support=True):
             # the 2 if's are for checking if support1 falls in range of support2 or vice versa
             level1=each[0]
             level2=each[1]
+            if ~level1[-1] or ~level2[-1]:
+                # print(level1,level2)
+                after_length=len(level)
+                continue
+
             if(frange(level1[0],level1[1],value=level2[ind])): # checks if the value falls in the range of other two
-                merged_level=[min(level1[0],level2[0]),max(level1[1],level2[1]),min(level1[2],level2[2]),(level1[3]&level2[3])] if support else\
-                         [max(level1[0],level2[0]),min(level1[1],level2[1]),min(level1[2],level2[2]),(level1[3]&level2[3])]                
+                merged_level=[min(level1[0],level2[0]),max(level1[1],level2[1]),min(level1[2],level2[2]),(level1[3]&level2[3]),False] if support else\
+                         [max(level1[0],level2[0]),min(level1[1],level2[1]),min(level1[2],level2[2]),(level1[3]&level2[3]),False]                
                 level.append(merged_level) # add the new support 
                 # the below ifelse logic is keep the newly formed level and remove the modified level(S/R to R/S) whenever the combination involves a mixture of 2
                 if (~level1[3] & level2[3]):
@@ -88,8 +93,8 @@ def merging_levels(level,support=True):
                 after_length=len(level) # updating the change in length
                 break # now it will go back to the for loop and there will be a change in length
             elif(frange(level2[0],level2[1],value=level1[ind])):
-                merged_level=[min(level1[0],level2[0]),max(level1[1],level2[1]),min(level1[2],level2[2]),(level1[3]&level2[3])] if support else \
-                         [max(level1[0],level2[0]),min(level1[1],level2[1]),min(level1[2],level2[2]),(level1[3]&level2[3])]
+                merged_level=[min(level1[0],level2[0]),max(level1[1],level2[1]),min(level1[2],level2[2]),(level1[3]&level2[3]),False] if support else \
+                         [max(level1[0],level2[0]),min(level1[1],level2[1]),min(level1[2],level2[2]),(level1[3]&level2[3]),False]
                 level.append(merged_level)
                 if (~level1[3] & level2[3]):
                     level.remove(level1)
@@ -121,12 +126,25 @@ class Level_Indicator(bt.Indicator):
 
     params = (
     ('disp',False),
-    ('use_db',True),
-    ('conn_indicator',None)
+    ('use_db',False), #True
+    ('conn_indicator',None),
+    ('period_ema_wick', 30)
     )
 
     
     def __init__(self):
+
+        self.ind_dict={}
+
+        # this is for identifying those really big 
+        self.ind_dict['wick_bull'] = bt.If(self.data.open > self.data.close, self.data.high - self.data.open, self.data.high - self.data.close) 
+        self.ind_dict['wick_bear'] = bt.If(self.data.open > self.data.close, self.data.close - self.data.low, self.data.open - self.data.low)
+        self.ind_dict['wick_bull_ema'] = bt.indicators.EMA(self.ind_dict['wick_bull'], period=self.p.period_ema_wick)
+        self.ind_dict['wick_bear_ema'] = bt.indicators.EMA(self.ind_dict['wick_bear'], period=self.p.period_ema_wick)
+        self.ind_dict['wick_bull_dev'] = (abs(self.ind_dict['wick_bull'])-self.ind_dict['wick_bull_ema'])/self.ind_dict['wick_bull_ema']
+        self.ind_dict['wick_bear_dev'] = (abs(self.ind_dict['wick_bear'])-self.ind_dict['wick_bear_ema'])/self.ind_dict['wick_bear_ema']
+        # self.ind_dict['wick_bull_signal'] = bt.If(self.ind_dict['wick_bull_dev'] < 0, 0, self.ind_dict['wick_bull_dev'])
+        # self.ind_dict['wick_bear_signal'] = bt.If(self.ind_dict['wick_bear_dev'] < 0, 0, self.ind_dict['wick_bear_dev'])
 
         day_min=7*60
         time_dict={4:1,5:day_min,6:(5*day_min),7:(23*day_min)}
@@ -162,7 +180,7 @@ class Level_Indicator(bt.Indicator):
                 self.indicator_df=pd.read_sql(sql,self.p.conn_indicator) 
                 self.indicator_df.set_index('date_price',inplace=True)
                 self.indicator_df=pd.concat([self.indicator_df.drop(['value'], axis=1), self.indicator_df['value'].apply(pd.Series)], axis=1)
-                # print("got data")
+                print("got data")
                 self.latest_db_date=self.indicator_df.index.max()
                 self.level['support'] = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in self.indicator_df.iloc[-1]['support']]
                 self.level['resistance'] = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in self.indicator_df.iloc[-1]['resistance']]
@@ -172,15 +190,27 @@ class Level_Indicator(bt.Indicator):
             self.latest_db_date = datetime.datetime(2000, 1, 1)
     # N: This looks where the fractal points beeing added    
     def add_level(self,support=True):
+        # to get the size of the wick and set a flag for the level whether its mergeable
+        mergeable_flag=True
+        if support:
+            if self.ind_dict['wick_bear_dev'][-2]>=3:
+                mergeable_flag=False
+        else:
+            if self.ind_dict['wick_bear_dev'][-2]>=3:
+                mergeable_flag=False
+
+        # if ~mergeable_flag:
+        #     print(bt.num2date(self.data.datetime[-2]))
+
         side='Bull' if(self.data.close[-2]>self.data.open[-2]) else 'Bear'
         if(support and side=='Bull'):
-            return [self.data.low[-2],self.data.open[-2],bt.num2date(self.data.datetime[-2]),True]
+            return [self.data.low[-2],self.data.open[-2],bt.num2date(self.data.datetime[-2]),True,mergeable_flag]
         elif(support and side=='Bear'): 
-            return [self.data.low[-2],self.data.close[-2],bt.num2date(self.data.datetime[-2]),True]
+            return [self.data.low[-2],self.data.close[-2],bt.num2date(self.data.datetime[-2]),True,mergeable_flag]
         elif(~support and side=='Bull'):
-            return [self.data.high[-2],self.data.close[-2],bt.num2date(self.data.datetime[-2]),True]
+            return [self.data.high[-2],self.data.close[-2],bt.num2date(self.data.datetime[-2]),True,mergeable_flag]
         elif(~support and side=='Bear'):
-            return [self.data.high[-2],self.data.open[-2],bt.num2date(self.data.datetime[-2]),True]
+            return [self.data.high[-2],self.data.open[-2],bt.num2date(self.data.datetime[-2]),True,mergeable_flag]
 
     
     def next(self):
@@ -217,12 +247,13 @@ class Level_Indicator(bt.Indicator):
                 # Broken Support turns into Resistance and vice versa 
                 if(new_res):
                     for i in new_res:
-                        self.level['resistance'].append([i[1],i[0],i[2],False]) # reversing the levels (support to resistance) # The False is to indicate its not a new level. 
+                        # print(i)
+                        self.level['resistance'].append([i[1],i[0],i[2],False,i[4]]) # reversing the levels (support to resistance) # The False is to indicate its not a new level. 
                         self.level['resistance']=merging_levels(level=self.level['resistance'],support=False)
 
                 if(new_supp):
                     for i in new_supp:
-                        self.level['support'].append([i[1],i[0],i[2],False]) # reversing the levels (resistance to support)
+                        self.level['support'].append([i[1],i[0],i[2],False,i[4]]) # reversing the levels (resistance to support)
                         self.level['support']=merging_levels(level=self.level['support'])
 
 

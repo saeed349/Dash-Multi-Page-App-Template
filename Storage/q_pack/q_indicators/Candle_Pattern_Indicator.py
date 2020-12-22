@@ -282,7 +282,7 @@ class Candle_Indicator(bt.Indicator):
             self.l.Highest[0] = max([candle_0['high'],candle_1['high'],candle_2['high']])
             self.l.Lowest[0] = min([candle_0['low'],candle_1['low'],candle_2['low']])
 
-        ind_dict={'level':self.l.Pattern[0],'pattern_name':pattern_name}
+        ind_dict={'level':self.l.Pattern[0],'pattern_name':pattern_name,'high':self.l.Highest[0],'low':self.l.Lowest[0]}
         self.indicator_list.append(json.dumps(ind_dict, indent=4, sort_keys=True, default=str))
         self.date_list.append(bt.num2date(self.data.datetime[0]))
 

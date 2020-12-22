@@ -74,7 +74,7 @@ def run(args=None):
         cerebro.addanalyzer(bt_logger_analyzer.logger_analyzer,_name='ml_logger')
 
     if args.load_indicator_db:
-        cerebro.addanalyzer(bt_indicator_analyzer.indicator_analyzer,_name='indicator_db',conn_secmaster=conn_secmaster,conn_indicator=conn_indicator)
+        cerebro.addanalyzer(bt_indicator_analyzer.indicator_analyzer,_name='indicator_db',conn_secmaster=conn_secmaster,conn_indicator=conn_indicator,write_only_updated=args.write_only_updated)
 
     if args.mode=='live':
         oandastore = btoandav20.stores.OandaV20Store(token=args.broker_token, account=args.broker_account, practice=True)
@@ -184,6 +184,9 @@ def parse_args(pargs=None):
 
     parser.add_argument('--load_indicator_db', required=False, default=True, type=args_parse_other.str2bool, const=True, nargs='?',
                     help='load the indicator data into DB')
+
+    parser.add_argument('--write_only_updated', required=False, default=True, type=args_parse_other.str2bool, const=True, nargs='?',
+                    help='load the indicator data into DB for the latest indicators')
 
     parser.add_argument('--load_symbol', required=False, default=False, type=args_parse_other.str2bool, const=True, nargs='?',
                     help='load the symbols from excel file')

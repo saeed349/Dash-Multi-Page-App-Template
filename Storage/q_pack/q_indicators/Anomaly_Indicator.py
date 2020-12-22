@@ -6,7 +6,7 @@ import json
 class Anomaly_Indicator(bt.Indicator):
     lines = ('vol_anomaly', 'vol_anomaly_2','gap_signal')
     # lines = ('test',)
-    params = (('period_ema', 10),)
+    params = (('period_ema', 10),('period_ema_wick', 30))
     # plotlines = dict(vol_anomaly=dict(_plotskip='True'),
     #                  vol_anomaly_trend_2=dict(_plotskip='True'),
     #                  gap_signal=dict(_plotskip='True'))
@@ -16,6 +16,7 @@ class Anomaly_Indicator(bt.Indicator):
         self.ind_dict={}
 
         # # not the neatest trick at all, done only so that I can get the agregrated W and M price and now the rest, so duplicates of price by number of securities, definitely not elegant
+        self.ind_dict['atr'] = bt.indicators.ATR(self.data, period=14)
         self.ind_dict['open']=self.data.open
         self.ind_dict['high']=self.data.high
         self.ind_dict['low']=self.data.low
@@ -41,8 +42,8 @@ class Anomaly_Indicator(bt.Indicator):
 
         self.ind_dict['wick_bull'] = bt.If(self.data.open > self.data.close, self.data.high - self.data.open, self.data.high - self.data.close) 
         self.ind_dict['wick_bear'] = bt.If(self.data.open > self.data.close, self.data.close - self.data.low, self.data.open - self.data.low)
-        self.ind_dict['wick_bull_ema'] = bt.indicators.EMA(self.ind_dict['wick_bull'], period=self.p.period_ema)
-        self.ind_dict['wick_bear_ema'] = bt.indicators.EMA(self.ind_dict['wick_bear'], period=self.p.period_ema)
+        self.ind_dict['wick_bull_ema'] = bt.indicators.EMA(self.ind_dict['wick_bull'], period=self.p.period_ema_wick)
+        self.ind_dict['wick_bear_ema'] = bt.indicators.EMA(self.ind_dict['wick_bear'], period=self.p.period_ema_wick)
         self.ind_dict['wick_bull_dev'] = (abs(self.ind_dict['wick_bull'])-self.ind_dict['wick_bull_ema'])/self.ind_dict['wick_bull_ema']
         self.ind_dict['wick_bear_dev'] = (abs(self.ind_dict['wick_bear'])-self.ind_dict['wick_bear_ema'])/self.ind_dict['wick_bear_ema']
         self.ind_dict['wick_bull_signal'] = bt.If(self.ind_dict['wick_bull_dev'] < 0, 0, self.ind_dict['wick_bull_dev'])

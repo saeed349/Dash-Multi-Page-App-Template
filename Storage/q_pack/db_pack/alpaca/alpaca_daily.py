@@ -129,7 +129,7 @@ def main(initial_start_date=datetime.datetime(2015,12,30),freq='d'):
             symbol_id = stock['symbol_id']
             symbol = stock['ticker']
             # try:
-            print(symbol)
+            print(i,'---',symbol)
             load_data(symbol=symbol, symbol_id=symbol_id, conn=conn, start_date=last_date, freq=freq)
             # except:
             #     print("exception")

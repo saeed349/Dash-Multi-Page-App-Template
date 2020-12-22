@@ -37,6 +37,11 @@ layout = html.Div([
             html.Div([dcc.Dropdown(id='dropdown-timeframe',
                  options=[{'label': i, 'value': i} for i in ['m','w','d','h4','h1','test']], multi=False, value="d")],
             className='two columns'),
+            html.Div([
+                    dcc.DatePickerSingle(
+                    id='date_picker',
+                    date=str(datetime.datetime.now().date()))],
+            className='four columns'),
     ],className='row'),    
     html.Br(),
     html.Div([
@@ -60,9 +65,10 @@ def update_tickerdropdown(instrument_type):
 @app.callback(
     Output('plot-candle', 'figure'),
     [Input('dropdown-securities', 'value'),
-    Input('dropdown-timeframe','value')]
+    Input('dropdown-timeframe','value'),
+    Input('date_picker', 'date')]
 )
-def updatePlot(symbol,timeframe):
+def updatePlot(symbol,timeframe,date):
     
     interested_feature='anomaly_vol_anomaly'
     df=data_selector(symbol,timeframe)
@@ -124,7 +130,7 @@ def updatePlot(symbol,timeframe):
     layout['yaxis'] = dict( domain = [0.2, 1],autorange = True,fixedrange=False)
     layout['yaxis2'] = dict( domain = [0.0, 0.1],autorange = True,fixedrange=False)
     layout['yaxis3'] = dict( domain = [0.1, 0.2],autorange = True,fixedrange=False)
-    layout['shapes'] = level_plot(df)
+    layout['shapes'] = level_plot(df,date)
     layout['margin']=dict(l=20, r=10)
     layout['paper_bgcolor']="LightSteelBlue"
     layout['width']=2200
@@ -133,16 +139,19 @@ def updatePlot(symbol,timeframe):
     return fig
 
 
-def level_plot(df):
+def level_plot(df,level_date):
+    level_date=datetime.datetime.strptime(level_date,'%Y-%m-%d') 
+    if df.index[-1]<level_date:
+        level_date=df.index[-1]
     try:
-        support_ls = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in df.iloc[-1]['level_support']]
+        support_ls = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in df.loc[level_date]['level_support']]
     except:
         support_ls =[]
     try:
-        resistance_ls = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in df.iloc[-1]['level_resistance']]
+        resistance_ls = [[ls[0],ls[1],datetime.datetime.strptime(ls[2],'%Y-%m-%d %H:%M:%S'),ls[3]] for ls in df.loc[level_date]['level_resistance']]
     except:
         resistance_ls =[]
-    end_dt=df.index[-1]
+    end_dt=level_date
     res_plot_ls=[]
     sup_plot_ls=[]
     for res in resistance_ls[:5]:
@@ -154,7 +163,7 @@ def level_plot(df):
 def data_selector(symbol,timeframe):
     sql="select * from indicator"
     ind_list=list(pd.read_sql(sql,con=conn_indicator)['name'])
-    start_date=datetime.datetime(2018,1,1).strftime("%Y-%m-%d")
+    start_date=datetime.datetime(2016,1,1).strftime("%Y-%m-%d")
     
     df_all_ind=pd.DataFrame()
     for ind in ind_list:
