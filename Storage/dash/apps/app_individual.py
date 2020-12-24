@@ -45,7 +45,8 @@ layout = html.Div([
     ],className='row'),    
     html.Br(),
     html.Div([
-        dcc.Graph(id="plot-candle")#,figure=Currentfig
+        dcc.Loading(id='loading-1',
+        children=[html.Div(dcc.Graph(id="plot-candle"))])
     ],style = {'display': 'inline-block', 'width': '100%','height':'200%'},className='row'),
 
     dcc.Link('Go back to home', href='/')
