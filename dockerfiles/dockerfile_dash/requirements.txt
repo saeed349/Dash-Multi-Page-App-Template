@@ -10,3 +10,5 @@ pandas
 SQLAlchemy==1.3.16
 python-dotenv
 future>=0.18.0
+sortedcontainers
+deltalake

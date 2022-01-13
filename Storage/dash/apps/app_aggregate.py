@@ -16,78 +16,68 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-import q_credentials.db_indicator_cred as db_indicator_cred
-
 from app import app
 
-conn_indicator = psycopg2.connect(host=db_indicator_cred.dbHost , database=db_indicator_cred.dbName, user=db_indicator_cred.dbUser, password=db_indicator_cred.dbPWD)
-
-sql="select distinct instrument from symbol" # change it to exchange when you reload oanda
-df_instrument_type=pd.read_sql(sql,con=conn_indicator)
-
-sql="select * from indicator"
-ind_list=list(pd.read_sql(sql,con=conn_indicator)['name'])
-ind_list_id=list(pd.read_sql(sql,con=conn_indicator)['id'])
-
-sql="select * from indicator"
-df_ind_type=pd.read_sql(sql,con=conn_indicator)
+df=pd.read_csv("/q_pack/data/AAPL.csv")
+df=df[:200]
 
 layout = html.Div([
     html.Div(
         [
             html.Div([dcc.Dropdown(id='dropdown-instrument',
-                    options=[{'label': i, 'value': i} for i in df_instrument_type['instrument'].unique()], multi=False, value="Forex")],
+                    options=[{'label': i, 'value': i} for i in df['instrument_type'].unique()], multi=False, value="Equity")],
+            className='two columns'),
+            html.Div([dcc.Dropdown(id='dropdown-securities',
+                 options=[{'label': i, 'value': i} for i in ['']], multi=False, value="AAPL")],
             className='two columns'),
             html.Div([dcc.Dropdown(id='dropdown-timeframe',
                  options=[{'label': i, 'value': i} for i in ['m','w','d','h4','h1','test']], multi=False, value="d")],
             className='two columns'),
-            html.Div([dcc.Dropdown(id='dropdown-indicator',
-                    options=[{'label': row['name'], 'value': row['id']} for i,row in df_ind_type.iterrows()], multi=False, value="1")],
-            className='two columns'),
             html.Div([
                     dcc.DatePickerSingle(
                     id='date_picker',
-                    # min_date_allowed=datetime.datetime(1995, 8, 5),
-                    # max_date_allowed=datetime.datetime.now(),
-                    # initial_visible_month=datetime.datetime.now(),
-                    # display_format='MMMM Y, DD',
                     date=str(datetime.datetime.now().date()))],
             className='four columns'),
-    ],className='row'),
-    html.Div([
-        html.Div([
-        dash_table.DataTable(
-            id='indicator_table',
-            editable=False,
-    #         page_size=10,
-    #         page_action='none',
-            style_table={'height': '400px', 'overflowY': 'auto'},
-            # export_format='xlsx'
-        )],className='twelve columns')
-    ],className='row'),
+    ],className='row'),    
     html.Br(),
+    html.Div([
+        dcc.Loading(id='loading-1',
+        children=[html.Div(dcc.Graph(id="plot-candle"))])
+    ],style = {'display': 'inline-block', 'width': '100%','height':'200%'},className='row'),
+
     dcc.Link('Go back to home', href='/')
 ])
 
+@app.callback(
+    Output('dropdown-securities', 'options'),
+    [Input('dropdown-instrument', 'value')]
+)
+def update_tickerdropdown(instrument_type):
+    return [{'label': i, 'value': i} for i in df['symbol'].unique()]
+
+@app.callback(
+    Output('plot-candle', 'figure'),
+    [Input('dropdown-securities', 'value'),
+    Input('dropdown-timeframe','value'),
+    Input('date_picker', 'date')]
+)
+def updatePlot(symbol,timeframe,date):    
+    data = [ dict( type = 'candlestick', open = df.open,high = df.high, low = df.low, close = df.close, x = df.index, yaxis = 'y1', name = 'price')]
 
 
-@app.callback([Output('indicator_table', 'data'),
-              Output('indicator_table', 'columns')],
-              [Input('dropdown-instrument', 'value'),
-              Input('dropdown-timeframe', 'value'),
-              Input('dropdown-indicator', 'value'),
-              Input('date_picker', 'date')])
-def indicator_table(instrument,timeframe,indicator,date):
-    sql="""select * from
-    (
-    select s.ticker, d.value, d.date_price as date,
-    row_number() over(partition by d.symbol_id, d.date_price, d.indicator_id order by d.created_date desc) as rn
-    from {}_data d join symbol s on d.symbol_id=s.id 
-    where s.instrument='{}' and d.indicator_id={} and date_price='{}'
-    ) t
-    where t.rn = 1""".format(timeframe,instrument,indicator,date)
-    df_indicator=pd.read_sql(sql,con=conn_indicator)
-    df_indicator=pd.concat([df_indicator.drop(['value'], axis=1), df_indicator['value'].apply(pd.Series)], axis=1)
-    columns=[{"name": i, "id": i} for i in df_indicator.columns]
-    data=df_indicator.to_dict('records')
-    return data,columns
+    layout=dict()    
+    layout['xaxis'] = dict( rangeslider = dict( visible = False ),autorange=True,fixedrange=False,visible=False,type='category')#type='category',
+    layout['yaxis'] = dict( domain = [0.2, 1],autorange = True,fixedrange=False)
+    layout['yaxis2'] = dict( domain = [0.0, 0.1],autorange = True,fixedrange=False)
+    layout['yaxis3'] = dict( domain = [0.1, 0.2],autorange = True,fixedrange=False)
+    # layout['shapes'] = level_plot(df,date)
+    layout['margin']=dict(l=20, r=10)
+    layout['paper_bgcolor']="LightSteelBlue"
+    layout['width']=2200
+    layout['height']=1000
+    # to add the crosshair
+    layout['xaxis']['showspikes']=True
+    layout['xaxis']['spikemode']  = 'across'
+    layout['xaxis']['spikesnap'] = 'cursor'
+    fig = dict( data=data, layout=layout )
+    return fig

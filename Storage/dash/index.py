@@ -3,7 +3,8 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 
 from app import app
-from apps import app_individual, app_aggregate
+from apps import app_individual,app_aggregate
+import os
 
 app.layout = html.Div([
     dcc.Location(id='url', refresh=False),
@@ -23,7 +24,7 @@ def display_page(pathname):
     if pathname == '/individual':
         return app_individual.layout
     elif pathname == '/agregrate':
-        return app_aggregate.layout
+        return app_aggregate.layout   
     else:
         return index_page
 

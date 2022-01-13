@@ -1,4 +1,0 @@
-Ticker,Time,Hypothesis,Type,Pattern,Frequency,Price,Trigger Message,Sent
-EUR_USD,6/14/2020 16:33,,Candle,Bear,"h1,h4,d",,"W - At resistance levels
-Looks for signs of reversals in D, 4h and 1h - The 1h and 4h would have to be solid reversals if you want to enter.",
-GBP_USD,6/14/2020 16:33,,Price,,,0.5,Hello,TRUE

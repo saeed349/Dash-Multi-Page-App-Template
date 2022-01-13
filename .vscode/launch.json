@@ -11,7 +11,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
-            // ,"justMyCode": false
+            ,"justMyCode": false
             // ,"env":{"PYTHONPATH": "${workspaceFolder}/pack"} // If you want to refer locally without setting OS env variable
             ,"env":{"PYTHONPATH": "${PYTHONPATH}"}
             // ,"envFile":"${workspaceFolder}/.env" # if you have a lot of env variables.
